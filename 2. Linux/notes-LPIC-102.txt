@@ -1,0 +1,380 @@
+◘ Conceitos Básicos sobre o shell
+	- Quando um user loga no sistema, a primeira coisa que começa é o shell, baseando-se no arquivo "/etc/passwd", de modo que diversas configuration files (ou scripts) "ligam"/são executadas de modo a iniciar um programa automaticamente (são scripts que abrem um programa automaticamente, ao logar no seu user, por exemplo.)
+	- Tipos de shell: "Log-in shell", "no log-in shell", "interactive shell" e o "non interactive shell". 
+Em linux systems, o shell é do tipo Log-in. Ao apertar "Ctrl + Alt + F7" você desloga desse shell e ao apertar "Ctrl + Alt + F2" você reeloga. Ao usar o comando 'bash' vamos abrir um sub-shell e esse sub-shell é do tipo interactive.
+A configuration file para os log-in shells é a "/etc/profile". Aí existe um script que, basicamente, vai configurar as varáveis de ambiente e executar outros scripts (executar programas automaticamente) e etc. Em "/etc/profile.d" você verá outras configurations files (scripts).
+	- As configs em "/etc" são system wide, ou seja, para todos os users. As configs em "/home/username" são user wide, ou seja, so para o usuário em questão, como é o caso do ".bash_profile" (ou ".profile"), arquivo que está no /home e que define variáveis de ambiente do user.
+Outro arquivo importante e que tem outras funcionalidades é o "/home/.bashrc". Além de contem scripts também é onde você pode criar/configurar "Alias" (quando uma string é o equivalente a um comando já existente). Com 'alias' você pode ver os alias existentes.
+
+• Environment Variables:
+	- Podem ser: system wide (para todos os users e programas) ficando separadas em "/etc/profile" e em "/etc/bash.bashrc" e em algums computadores em   "/etc/enviroment" ou user wide (só para um user), ficando sempre no /home correspondente, nas files ".bashrc", ".profile" entre outras.
+
+	- $PATH possibilita que, ao invés de escrever '/bin/chmod' escreva-se 'chmod', por exemplo. Ao criar uma variable ela só será valida para a sessão atual, mesmo usando o 'export'. Para salva-la definitivamente deve-se adiciona-la ao "/etc/bash.bashrc" ou ao "/home/.bashrc". Para verificar as environment variables atuais usa-se 'printenv' ou 'env'. Ao usar o comando 'sh' você abre um novo shell (do tipo "sh") e ao fazer 'env -i' abre-se o "sh" shell sem environment variables (só com a obrigatório "$PWD")
+
+	- Você também pode criar um script e carregar ele de modo que todas as variables dele vão ser "ligadas" ao mesmo tempo. Crie uma arquivo vazio(tipo bloco de notas) e na imediatada primeira linha escreva "#!/bin/bash" depois, na terceira linha, você já pode adicionar as variables. Depois que o arquivo for salvo usa-se o comando 'source'. Ex: 'source variables_env' que vai ler e carregar as variables dentro do arquivo "variables_env". Ao invés de usar o comando 'source' também pode-se usar "." ou "./". Ex: '. variables_env'. Os dois jeitos funcionam.
+
+
+◘ Simple Scripts (bash scripting)
+Um comando útil não só para bash scripting como para obter um feedback do sistema é o 'echo $?', ele vai mostrar "0" se o ultimo comando foi executado corretamente e "1" se ocorreu um erro e/ou o comando não foi executado.
+
+• chained commands: 
+	- São comandos feitos um após o outro. Na CLI basta você separar eles por um ";" ex: 'mkdir test; echo $?' Ao usar ";" o ultimo comando vai ocorrer independentemente do que ocorreu com o primeiro (desde que não tenham nenhuma relação, é claro).
+Ao usar "&&" no lugar do ";" você diz: "só execute esse comando se o anterior foi executado corretamente". ex: 'mkdir test && echo "creation successful"'
+Para dizer, o segundo comando só é executado se o primeiro não funcionar, usa-se "||". ex: 'mkdir /test || echo "creation fail"'
+
+	- Como já dito, uma variable é um espaço/elemento/entidade que possue algum valor/utilidade. Quando trabalhando no Bash, você não precisa determinar ou especificar o tipo da variável (se é uma string, um "integer" ou etc)
+Quando você for adicionar uma string a uma variable (se ela tiver "espaços") você deve usar simple quotations (''). Ex: hello='hello world!' repare que o sinal de "=" sempre fica grudado, não existindo "espaço" nem antes nem depois.
+
+	- O bash possue uma estrutura e um dos integrantes é o Intepreter, ele é quem entende a logica que interpreta os comandos e manda o hardware dar o que você pede. Ao usar "\" você diz ao interpreter que o proximo caractere não deve ser intepretado, ou seja, deve ser assumido com sentido literal, do jeito que está escrito. 
+Ex: 'PRICE=25; echo "O preço em \$BR é $PRICE"'. Dessa forma, o interpreter vai entender $BR como uma string e não como uma variable.
+	- OBS: se no exemplo anterior você tive-se usado aspas simples no comando 'echo' ('o preço...') então a variable não seria mostrada ($PRICE não seria substituido por 25, seu valor). O motivo: por que varia de linguagem em linguagem. Como visto em SQL, cada linguagem interpreta "" e '' de maneira diferente.
+	
+	- Veja os dois comandos a seguir:
+'echo "churras do bam: ls /churras"' | 'echo "churras do bam: $(ls /churras)"'
+No segundo caso, dentro do output do 'echo', o texto "ls /churras" vai ser intepretado pelo interpreter como um comando pois você usou "$()" (é basicamente o contrário de usar o "/".
+
+• Scripting básico: Primeiro, escreva o "#!/bin/bash" na primeira linha. Todas as linhas que começam com "#" são comentários e não afetam o programa, "#!" porém, diz ao sistema que o arquivo é um executável.
+Veja o script a seguir (escrito dentro de uma arquivo de texto, tipo bloco de notas)
+
+#!/bin/bash
+#comentário
+
+let result=$1+$2
+echo "the result is $result"
+
+	Antes de executar você tem que: 1. salvar e 2. Mudar as permissions com o comando 'chmod', para que o script possa ser executado (se você faz isso constantemente lembre-se que você pode alterar o "umask" para facilitar a vida)
+O comando 'let' vai mostrar o output aritimético de variables aritimeticas (ou seja, se a variable for um número o comando 'let' poderá/permitirá mostra-la). Graças ao 'let' quando o comando iniciar seram pedidos dois valores, um ficará armazenado na variável $1 e o outro na $2, depois disso os valores são somados e atribuidos à variável $result, e essa variable é usada no comando 'echo' da linha abaixo.
+
+	Para executar o script: './comand-name x y' onde "comand-name" é o nome do comando e "x y" são os inputs para as variáveis $1 e $2 respectivamente.
+OBS: eu testei e... é obrigatório que as variáveis que seram os outputs sejam chamadas de  $1, $2, $3 e etc. Você não pode colocar o nome da variável como qualquer coisa (como no visualg) tem que ser esses números pois existe alguma logica de ordens de imput ou algo do tipo. Repare também que se um dos valores não for especificado o comando todo não funciona.
+
+	Também pode-se fazer scripts sem o 'let' (algo mais voltado para a linguagem C), ao usar arithimetic expressions e outros comandos (mais parecido com visualg). Exemplo:
+	
+#!/bin/bash
+	 
+echo "diga um número"
+read A 
+echo "diga outro"
+read B 
+echo "A soma é $(($A+$B))"
+
+OBS: O comando read vai obter algum imput(não necessáriamente aritimético) e $(($A+$B)) é "gramatica correta" da soma, analize o porquê.
+
+Outros exemplos são:
+	
+#!/bin/bash
+
+clear;
+
+echo -e "escolha uma operação:\n"
+echo -e "Somar (+)\n"
+echo -e "Subtrair (-)\n"
+echo -e "Multiplicar (*)\n"
+echo -e "Dividir (/)"
+
+read OPS
+
+echo "Escolha um número..."
+read X
+echo "Escolha outro número..."
+read Y
+
+
+if [[ $OPS = + ]]; then
+		    C=$(($X+$Y))
+		    echo "o reusultado é: $C"
+elif [[ $OPS = - ]]; then
+		    C=$(($X-$Y))
+		    echo "o resultado é: $C"
+elif [[ $OPS = * ]]; then
+		    C=$(($X*$Y))
+
+fi
+
+Dê uma boa olhada. Repare que o comando 'if', assim como outros, é "fechado" ao ser escrito de tras para frente (fi)
+Ao invés de usar o 'if' você pode usar o 'case' (que é literalmente igual ao "Escolhacaso" do visualg) mas aqui eu não posso usar caracteres especiais nas possibilidades (ao invés de "+", tenho que usar uma letra)
+
+#!/bin/bash
+
+clear;
+
+echo -e "escolha uma operação:\n"
+echo -e "Somar (A)\n"
+echo -e "Subtrair (S)\n"
+echo -e "Multiplicar (M)\n"
+echo -e "Dividir (D)"
+
+read OPS
+
+echo "Escolha um número..."
+read X
+echo "Escolha outro número..."
+read Y
+
+case "$OPS" in
+	A)
+		C=$(($X+$Y))
+		echo "o reusultado é: $C"
+		
+	S)
+		C=$(($X-$Y))
+		echo "o reusultado é: $C"
+		    
+	*)
+		echo "você é um abacate"
+esac
+
+	Outros comandos que são usados em scripting são os já conhecidos "enquanto" (while, que utiliza o 'do' para especificar a ação e o 'done' no final) e o "para" ("for", definindo um número ou "seq"(uência) de iterações). Ambos são usados para loops. Quando trabalhando com loops ou outros comandos em que temos que colocar intervalos ou limites de até quando o comando deve rodar, devemos utilizar os "Comparison operators": '-eq' (equal), '-ne' (not equal), '-gt'(greater than), '-lt'(less than), '-le' (less or equal), '-ge'(greater or equal).
+Exemplo: 'VAR1 -lt VAR2' significa que a VAR1 é menor que a VAR2. Isso, é claro pode ser usado dentro do while, como veremos a seguir.
+
+#!/bin/bash
+
+NUMBER=0
+
+while [ $NUMBER -le 20 ]
+do
+	echo $NUMBER
+	Number=$(($NUMBER+1))
+done
+
+Alternativamente podemos usar o loop com o "for" (podemos escrever isso de várias formas):
+
+#!/bin/bash
+
+for i in {1..20}  
+do
+	echo $i
+done
+	 
+	Outros comandos que valem apena ser mencionados (não são usados dentro de scripts) são o 'test' que serve para verficar os diferentes status de um arquivo e o 'exec' que entre outras coisas, executa programas e scrpits. Ex: 'test -e file && echo $?' vai verificar o arquivo está disponível (se sim o output será 0, graças ao 'echo $?')
+
+◘ X-Window System
+
+	• Em servidores antigos ou muito grandes, seja por um motivo ou por outro, interfaces gráficas (GUI) não são usadas. X-window é o programa/sistema responsável por criar elementos gráficos e semelhantes dentro do linux, podendo ser chamado de  x11, onde 11, que é a versão mais atual.
+X-window system é tanto um network protocol quanto um software, sendo chamado de "client server model". Sendo dividido em um "x server" e um "x client".
+	- "x server" "runs" no background do pc, criando os elementos gráficos (icons, etc) que os x clients usam, possuindo e utilizando drivers de diversas maneiras. Ou seja, vai pegar dados e informações e criar elementos gráficos.
+	- "x client" é um programa ou software que utiliza o "x server", por exemplo, a tela. Dessa forma é o responsável por mostrar/ fazer o display dos elementos gráficos.
+Existem ainda "window managers", que são "x clients" que influenciam no output (em como é a aparência das janelas (abas) e os botões, por exemplo). Os "Display managers" são simplesmente os aplicativos que criam as log-in screens para entrar no sistema como algum user. Como exemplo existe o Gnome display manager (GDM).
+
+	- O x11 é utilizada de maneira diferente em cada distro (pondendo até nem ser utilizada), porém um arquivo imporante de conhecer é o "/etc/X11/xorg.conf" que já não é mais usada (out of date). Atualmente é usa-se o "/etc/X11/xorg.conf.d" (em debian systems), onde "xorg.conf.d" é uma pasta (directory). O local onde essa arquivo fica, muda de distro para distro.
+
+	- A combinação de "x server", "x client", display manager, window manager e outros programas e elementos gráficos é o chamado Graphical Desktop. Repare portanto que cada elemento citado é uma tencologia que está sendo citada superficialmente aqui. Os graphical desktops mais famosos são KDE, Xfce e Gnome, porém existem muita outros.
+
+	- Ilustrando a diferença:
+kernel >= Distro > graphical desktop >= tipo de desktop
+(linux)  (ex: Debian)  (ex: KDE)    (ex: KDE plasma)
+
+	- É importante citar que, ao se tratar de elementos gráficos, deve-se levar em consideração políticas de acessibilidade para pessoas que não enxergam cores, tem problemas de audição e etc. Não é definitivo, mas exite uma espécie de padrão informativo, onde quase todas os graphical desktops possuem/disponibilizam as mesmas features que promovem a acessibilidade do sistema ao público universal (incluindo pessoas com deficiências).
+OBS: você pode iniciar um programa gŕafico, ou seja, um programa que utiliza elementos gráficos, através do ssh, ou seja, através do shell (que teoricamente é "não gráfico")
+
+
+◘ User managment
+	- Deve-se saber como criar, deletar, mudar senha e capacidades de um user. Isso é feito com root rights. Ao invés de ficar usando 'sudo' entre como root ao fazer 'sudo su -' (mas cuidado com o que vai fazer). Para logar como outro user basta fazer 'sudo su - user_name'. Criação de um user:
+		- 'useradd jose' vai criar o user "jose" porém ele não é utilizável (ainda não possue uma pasta no /home sem permissions)
+		- 'userdel jose' vamos deletar um user
+		- 'useradd -u 1500 -d /home/jose -m -s /bin/bash -c "Test user" jose' (jeito "certo" de se criar um user pelo cli)
+"-u 1500" vai dar o id 1500 ao jose. "-d /home/jose" especifica o /home do novo user. "-m" garante que o /home será criado junto com ao user. A parte    "-s /bin/bash" diz qual o shell vai ser usado para fazer log-in. Quando usa-se "/nologin" ou "/false", o user não pode fazer log-in (normal em users criados por softwares, usados somente como ferramentas)."-c "test user"" é só um comentário. "jose" é o username
+		
+	- Para atribuir uma senha a um user use: 'passwd username'. Cada user pode alterar sua senha, sem precisar de sudo rights (a menos que você impeça) Relembrando, para alterar configurações em user level, a repeito do bash e variables, vá até /home/.bashrc. Se quer fazer a system wide vá até /etc/skel/.bashrc.  Os users criados são listados em "/etc/passwd". Não se confunda, existem vários users uma vez que alguns programas necessitam criar alguns específicos. 'chsh -s /bin/false username' vai impossibilitar o user de logar. De modo análogo, 'chsh -s /bin/bash username' vai permiti-lo.
+
+• groups:
+	- 'groupadd -g 1600 groupname' vai criar um grupo com o id 1600. Os grupos ficam listados em "/etc/group" (no singular). Tanto nesse arquivo quanto no "/etc/passwd" você verá que, na segunda coluna, em algumas linhas, existe um "x" é onde a senha do group (não é recomendado colocar) e a senha do user fica (encripitada). Como ela está encripitada então aparece o "x", no arquivo "/etc/shadow" podemos ver mais informações.
+	- 'gropumod' vai mudar configurações de um group de acordo com as options e os arugments que você passa. O mesmo pode ser feito com users, mas ao usar 'usermod'
+	- 'groupdel groupname' vai deletar um group.
+	- 'usermod' muda configurações de um user de acordo com as options e os arugments que você passa. Ex: 'usermod -s /bin/sh username' troca/estabelece o sh shell como meio do user fazer log-in. 
+	- Exemplo importante: 'usermod -G <grupo_alvo> <username>' Vai adicionar o user ao grupo alvo (-aG também pode ser usado, dê uma pesquisa). 
+	- Com 'id <username>' podemos ver em quais grupos um user está.
+
+	- Em "/etc/shadow" vemos as senhas de cada user, encriptadas, além de outras configurações importantes como, dias até a senha espirar, aviso de renovação de senha, validade da senha. Uma maneira mais amigável de ver essas informações é com 'change', além de poder modificar as configurações. Ex: 'change -l <username>'
+
+
+◘ Scheduling jobs (automatizando execução de comandos/tasks no sistema. ex: fazer backups todo final de semana).
+	- 'cron' é um daemon, um programa de computador que executa um processo no background, em vez de estar sob o controle direto de um use. Ele checa o arquivo "/etc/crontab" e outras pastas "/etc/cron.d" e "/var/spool/cron". A "/etc/crontab" só pode ser alterada pelo root e tem 7 colunas principais.
+As 5 primeiras contém informações de tempo, claro que se referindo ao tempo que vai levar até o comando ser executado, sendo a primeira os minutos, a segunda as horas, a terceira o dia do mês, a quarta o mês em si (1 até 12) e a quinta o dia da semana (0 (domingo) até 6). A sexta coluna é o user que vai ser o "autor"/responśavelpelo processo (ao menos para o sistema) e a Sétima coluna é o comando a ser executado. Se no lugar de alguma das 5 colunas existir um asterísco (*), significa "a todo momento" (todo mes, todo dia, toda hora).
+
+	- Usando o comando 'crontab' você pode ver algumas informações e criar a sua crontab file (ao invés de ser para o sistema é para o user).
+(Eu no momento da anotação não tenho o "/etc/crontab", podendo cria-la lá, como root, ou usando 'crontab -e' como felipe_c. A formatação bonitinha pode não existir, basta você pesquisar pela formatação/ jeito correto de escrever na internet).
+Existem ainda as files "cron.deny" e "cron.allow", que você pode criar dentro da pasta "/etc", que vão permitir ou bloquear o uso do cron (daemon). Nelas você só precisa colocar o nome de um user e ele estará bloqueado ou permitido.
+
+	- 'Anacron' é uma "variante" do 'cron'( portanto exisitindo o arquivo "/etc/anacrontab"), ela trabalha ao supor que os computadores/ sistemas não estão rodando continuamente (24h por dia). Tem uma formatação semelhante ao 'cron' porém sendo recomendado fazer uma pesquisa melhor, caso for usar.
+
+	- 'at' é um programa (que tem que ser instalado, pois não é um daemon) que executa programas em um horário ou na data que especificamos. ex: 'at 17:30' depois disso, um sub-bash vai abrir e nele você coloca todos os comandos a serem executados nessa hora. Depois que terminar de adicionar os comandos aperte "Ctrl + D" e os Scheduling foram feitos.
+Como o 'cron', 'anacron' e o 'at' estão em background eles são considerados "jobs", podendo ser "killed" a qualquer momento.
+
+	- Systemd systems também possuem mecanismos para programar a execução de tasks, são as timer units. Dentro de "/lib/systemd/system" você verá arquivos com a extensão ".timer". Faça o 'cat' em algum arquivo e você verá que eles são separados por sections, e no section [Timer] ficam informações de quando a task será executada, se ela é persistente (se repete) e etc. Na section [Service] estão as informações do comando. Com 'systemctl list-timers' vemos todos os timers "funcionais". 
+Com 'systemd-run'você agenda os comandos. ex: 'systemd-run --on-active=60 /bin/touch /home/user/teste'. Vai executar o comando '/bin/touch' daqui a 60 sec (eu acho) e vai criar o arquivo teste (em /home/user).
+
+
+◘  Utility system features
+
+• Localization setings
+	- localization é a guideline que os linux systems seguem para representar a linguagem, a notação de data e as moedas, além de algumas particularidades de programas dependendo do país em que você reside. Como o mundo é globalizado e existe a  internationalization de distros, e necessário conhecer os character encoders usados, fornecendo para quem precisar os caracteres de uma linguagem específica. Antes o ASCII era o padrão, podendo representar 128 caracteres diferentes, incluindo os "control caracters" (espaço, tab, etc). Foi substituido pelo ISO 8859, que pode representar 256 caracteres, sendo subdividido em algumas categorias, por exemplo ISO 8859-1 é utilizado por linguas derivadas do alfabeto latino.
+
+	- A tecnologia que atualmente é a mais usada é o UCS (que é basicamente igual ao ISO10646), universal coded character set, conhecido também como Unicode. O unicode é um padrão tecnológico, ou seja, que é usado "profissionalmente" e tem como ideia juntar todos os caracteres do mundo em um único sistema de escrita. Obvio que não há necessidade de baixar ou utilizar todos, por isso existem subdivisões por idioma e por formato de leitura e armazenamento. Um dos formatos mais utilizados na internet, graças ao seu "leve" peso e sistema de leitura compacto é o UTF-8. Os primeiros 128 caracteres do UTF-8 e do ASCII são os mesmos.
+
+	- Ao usar o comando 'file file.txt' você verá em que formato o texto está "encodado". Se não existirem caracteres especiais provavelmente ele será ASCII, mas se for adicionado outros caracteres utiliza-se automaticamente o UTF-8.
+	- O comando 'iconv' é utilizado para trocar o metodo de character encoding de uma arquivo. Ex: 'iconv -f ASCII -t UTF-8 file.txt > file-utf.txt'. Passa de ASCII (-f = from) para (-t = to) UTF-8, e vai usar o arquivo file.txt para criar o arquivo file-utf.txt. Esse comando também pode ser usado em concatenações ('echo "..." | iconv ...').
+
+	- Languages: 'echo $LANG' mostra a lingua usada agora. Mudar essa variável só vai mudar algumas coisas, sendo necessários alterar muitas outras variables, como a variável de tempo $LC_TIME, para poder trocar a language de todo o sistema. Provavelmente é mais fácil alterar as configurações através do seu graphical desktop.
+	- Locales: São files que contém informações de linguagem, sistema de horas (24 ou 12), entre outras. Todos começam com "LC_" e são variables. Usando 'locale' você as verá. O comando 'locale' fica em "/usr/bin/locale". Para modificar essas informações, ou você muda manualmente as variables e as salva, ou edita o arquivo "/etc/default/locale" e adiciona "LC_ALL=pt_BR.UTF-8" por exemplo, de modo que vai ter alterar todas as demais, uma vez que "LC_ALL" tem a maior "priority". Para informações mais detalhadas sobre uma locale use 'locale -k  LC_MONETARY', por exemplo.
+	- Time zones: 'cat /etc/timezone' mostra a sua time zone atual. Em "/usr/share/zoneinfo" você encontra uma lista com os diferentes timezones. Se quiser alterar, você tem que mexer tanto no "/etc/timezone" quanto no "/etc/localtime" ou então usar o comando 'tzselect', para alterar o time zone user-wide de uma maneira mais simples. Após usar o comando é recomendado atualizar a variável $TZ com o timezone ideal (ex: "Pacific/Palau" é um timezone).
+O comando 'timedatectl' mostrá informações relevantes com relação ao tempo e a timezones. Com 'timedatectl set-timezone Europe/Berlin' você altera o timezone as well.
+
+
+• Time
+	- Todos os computadores possuem um CMOS, que é um cristal(sólido) semicondutor (aqueles microchips) que é usado para armazenar informações da placa-mãe. Ele assim como a memória RAM é volátil porém, diferente dela, possue uma bateria "particular" que nunca deixa ele ser desligado. Quando você não consegue acessar as configurações da BIOS, por exemplo, você recorre a retirar essa bateria para "resetar" as informações do CMOS ou usar o jumper "Clear CMOS" (jumper = pequeno condutor usado para ligar dois pontos em um circuito eletronico). A mesma bateria que alimena o CMOS também alimenta o relógio do computador (um relogio digital comum), que funciona mesmo quando o micro (micro=computador) está desligado. O clock do CMOS (como é chamado) é medido em segundos, desde 1 do 1 de 1970 (ano em que o Unix (antecessor do linux, foi criado/ se tornou relevante).
+
+	- Com 'sudo hwclock' você podever qual é o CMOS clock time. Pode-se dizer que é o tempo correto/atual, que o seu system (graphical desktop) deve ter. Para sincronizar o tempo usa-se 'hwclock --hctosys' (em alguns casos alguns passos devem ser tomados antes de realizar esse comando).
+	- Com o comando 'date' podemos ver e alterar a data e a hora do sistema. Para alterar a hora, por exemplo, usa-se 'date +%T -s "15:30:21"'
+	
+	- Time syncrhornization: usa da tecnologia "ntp" (network time protocol), mais especificamente a do daemon 'ntpd', podendo ser usado como server ou como client. A configuration file é "/etc/ntp.conf". E a parte notável são as "pools". Basta saber que cada pool possue centenas de time servers onde um é escolhido ao acaso para ter seu tempo utilizado. Supondo uma empresa, deve existir um central server, que vai ser a pool para os demais servers e pc's da empresa, compartilhando o tempo (de maneira sincronizada). Uma maneira de sincronizar o tempo, com o tempo da internet ("correto") é usar: 'ntpdate <alguma_pool> <outra_pool_opcional>. Ex: 'ntpdate server 0.arch.pool.ntp.org'.
+
+• Logging
+	- Em linux vários eventos são gravados/registrados em "Log files", é uma espécie de relatório que registra o que aconteceu. Existem diversos tipos de logs, que são dividos em níveis/classes.
+		- debug: "anota" ou "logs" todos os detalhes. Ideal para procurar por erros que não aparecem, porém consume MUITO espaço do HD.
+		- info: Logs harmless information
+		- notice: Logs non-hazardous information
+		- warning ou warn: Logs warnings. These Warnings usually do not lead to crashing or similar.
+		- error ou err: Logs errors that may be responsible that a program is not running (correctly)
+		- crit: Logs critical errors
+		- alert: Logs entries that indicate serious problems
+		- emerg ou panic: Often the last entry before a system crash
+
+	- O comando padrão/standard para ver logs é o 'rsyslog'. A configuration file está, como de prache, em "/etc/rsyslog.conf", onde você ver as principais log files, seus leveis ("*" = tudo menos debug) e o path até o arquivo. O 'rsyslog' usa outros diretórios e files para funcionar. São eles, respectivamente, o diretório "/var/spook/rsyslog" (chamado de work directory [Não o desktop, esse é outro]) e os arquivos "/etc/rsyslog.d/*.conf".
+OBS: o comando 'logrotate' vai fazer o "rodízio de log files, fazendo a compressão das em antigas (em .gz) e criando novas. Para saber de quanto em quanto tempo ele faz isso, vá até "/etc/logrotate.conf"
+
+	- Claro que o computador pode não usar o rsyslog (meu caso), sendo utilizado outro comando/sistema no lugar, como o 'syslog' ou o 'jornalctl', que usa o daemon 'journald', que armazena as coisas em "/var/log/journal". Arquivos do tipo ".journal" não podem ser lidos com 'cat' ou 'vi', sendo necessário utilizar o 'journalctl' e suas options. ex: 'journalctl -e' vai mostrar as "entries" (registros) mais novos, que ficam na parte de "baixo" do arquivo (nas ultimas linhas, já que está sendo incrementada). A config file do jornald está em "/etc/systemd".
+
+• Mail Transfer Agents (MTA).
+	- A transmissão de emails é feita por três programas/serviços, o MUA o MDA e o MTA.
+		- MUA = Mail user agent. É um programa do tipo o outlook.
+		- MDA = Mail delivery agent. É o responsavel por gerenciar os emails que chegam e que são enviados. Como exemplo temos procmail e o maildrop 
+		- MTA = Mail transfer Agent. É o responsável por efetivamente receber e enviar emails normalmente usando o SMTP protocol. Os mais conhecidos são postfix, sendmail, exim.
+		
+	- Um arquivo usado para redirecionar emails em linux servers é o "/etc/aliases". Vai aparecer algo do tipo: "tommy: thomas". Os emails mandados para o "tommy" vão ser redirecionados/recebidos pelo linux user thomas. Outro exemplo seria: 'employees:: include:/home/user/employees_index'. Toda vez que uma email for mandado para o "grupo"/"entidade" chamada de employees, o email será redirecionado à todos os usuários do linux server, que possuem seu username no arquivo "employees_index". Ao modificar esse arquivo você deve reenviar as informações para o MTA, para que ele saiba das alterações, podendo ser feito de várias formas, dependendo do MTA que você usa. Uma possibilidade seria: 'sudo newaliases'.
+
+	- A config file do MTA 'sendmail' está em "/etc/mail/sendmail.cf" e a do 'postfix' está em "/etc/postfix/main.cf". Já "/var/spool/mail" possui informações como o nome dos usuários que recebem emails nesse linux system. O comando 'mailq' também pode ser usado para obter informações, uma vez que você tenha configurado algum MDA e MTA na máquina.
+
+• Básico sobre "administração" de impressoras.
+	- Em linux systems quase sempre usa-se o CUPS, common unix printing solution. Um arquivo que é selecionado para ser impresso (através de um "print client program" como o 'lpr') entra na "printer queue" também chamada de "spooler". A queue do CUPS pode ser encontrada em "/var/spool/cups", essas files são chamadas de raw data e são passadas por um "print filter", que converte os dados para uma forma util para a impressora. Config files: "/etc/printcap" vai mostrar informações sobre a sua impressora e "/etc/cups" é onde as configs do CUPS estão.
+
+	- O comando 'lpr' manda os arquivos para serem impressos. Para adicionar uma impressora para uso do CUPS vá no browser e digite "http://localhost:631" vá na aba administration e adicione a opção com o mesmo nome que o da sua impressora, depois adicione as informações que são pedidas (nem todas são necessárias, podendo deixar em branco). Alguns Exemplos após feita a configuração: 
+		- 'lpr -P <nome_da_impressora> <arquivo_a_ser_impresso>' vai imprimir o arquivo com a impressora especificada.
+		- 'lpq a' vai mostrar a queue de todas as impressoras (queue = arquvos na fila para serem impressos), mostrando também o número do job.
+		- 'lprm -P <nome_da_impressora> <job_number>' Vai tirar da queue da impressora a file que tem o job especificado.
+
+◘ Internet protocols e network basics:
+	- A internet atual é a sucessora da ARPANET (tecnologia usada por organizações militares americanas que se difundiu em função da existencia de muitos dados e diversas aplicações).Com a abertura da Net para o público, foi criado o protocolo TCP/IP através do DoD model, que foi substituido pelo atual "OSI model"(open system interconnection) que é usado pelo linux.  Tanto o sender (quem envia dados) quanto o reciver(quem recebe) passa/executa as 7 camadas do OSI model mas em ordens diferentes. O sender vai da layer 7 até a layer 1 (decrescente para enviar dados) e o reciver vai da layer 1 até a layer 7 (crescente para receber dados).
+  
+• OSI model 
+	- Layer 7: Application Layer: Vai possibilitar aos aplicativos, que os users usam, dar algum imput e/ou receber algum output(ex: screen, Keyboard)
+	- Layer 6: Presentation Layer: Vai "padronizar" os dados em uma espécie de formulário, permitindo e facilitando a leitura dos dados nos diversos sistemas. 
+	- Layer 5: Session Layer: Vai permitir e procurar estabelecer uma comunicação entre os processos de diferentes sistemas/computadores, existindo "services" para cumprir essa tarefa (não precisa saber mais que isso).
+	- Layer 4: Transport Layer: Aqui os dados são separados em partes, que são enviados por diferentes caminhos, visando um mesmo destino. Entre os controladores/protocolos mais conhecidos estão o UDP e o TCP/IP.
+	- Layer 3: Network Layer: São os sinais/guardas de trânsito. Como na layer 4 os dados são enviados, a layer 3 se responsabiliza por encaminhar os diferentes pedaços de um mesmo dado para o seu destinatário correto, tendo "nodes" durantes os caminhos para verificar a integridade dos dados.
+	- Layer 2: Data Link Layer: É a "primeira parte do "receptor". Quando os pedaços de dados chegam no destino eles são juntados novamente e então verifica-se se alguma parte está faltando e etc, além de serem aplicados protocolos de segurança (como os checksums), descartando ou corrigindo anormalidades.
+ 	- Layer 1: Physical Layer: É a camada mais "baixa" (mais próxima do hardware). Fornece ferramentas para regular conexões físicas(por exemplo, antena, amplificador, plugue, Soquete, repetidor entre outros). Basicamente é o responsável por, fisicamente/no mundo real, organizar os fios/dispositivos por onde os dados passam até que eles cheguem no seu destino.
+
+OBS: TCP/IP se preocupa em enviar e garantir que os dados chegam corretamente. UDP simplesmente encaminha os dados, ele possue suas vantagens e é usado, por exemplo, em DNS e broadcasts (quando uma resposta ou feedback na transmissão não é necessária ou não se quer).
+
+• Ports e Bit notation 
+	- Ports são os alvos/destino de data packages. Existem diferentes portas, para diferntes tipos de dados, para diferentes programas/aplicações. Verifique o PDF que contém os services, juntamente com o número das portas e os protocols utilizados. Para saber mais sobre, pesquise ou faça outro curso.
+No arquivo "/etc/services" você verá os network services e suas portas. Existem um total de 65536 portas e você pode ver quais são as portas que estão sendo usadas pelo seu pc com o programa/package "net-tools" que precisa ser instalado. O comando seria 'netstat -teupan'
+
+	- IPv4: É um protocol que está na 3 layer do OSI model, e que adiciona um IP header para os data segments. Tem 32 bits long, diferente do IPv6 que tem 128 bits long. Um exemplo é o 192.168.1.10  Cada "bloco" de números representa 8bits, ou seja, 192 representa 8bits, 1 representa 8 bits  e etc totalizando 32bits. É possível escrever isso em outra notação: 00000000.00000000.00000000.00000000 Onde cada 0 é um bit, e por consequencia temos 8bits por bloco, total de 32bits. Existe uma especie de conversor. Obeserve a lista de números: 128, 64, 32, 16, 8, 4, 2, 1. Tem 8 números aí. Da esquerda para direita, cada número representa um 0, também da esquerda para direita. Por exemplo: 10000000.01000000.11000000.10000000 vai representar 128.64.192.128 Olhe bloco por bloco: O primeiro zero está a associado com com o 128, o 64 está associado com o segundo 0, no segundo bloco. Agora olhe o terceiro bloco, repare que tanto o primeiro zero quanto o segundo zero está preenchido, isso significa que o valor final vai ser a soma do valor que representa o 1 zero com o valor que representa o segundo zero, ou seja 128+64=192. Perceba agora o exemplo acima: 192.168.1.10, sua forma binária seria 11000000.10101000.00000001.00001010
+
+	- IP addresses são constituidos de  uma network part e uma host part e só pode se comunicar como outros computadores (sem o roteador) se eles estão no mesmo network segment. Os Ip adresses são divididos em classes:
+		- Class A: Vai de 0.0.0.0 até 127.255.255.255
+		- Class B: Vai de 128.0.0.0 até 191.255.255.255
+		- Class C: Vai de 192.0.0.0 até 223.255.255.255 "Internet paga"
+		- Class D: Vai de 224.0.0.0 até 239.255.255.255 Multicast
+		- Class E: Vai de 240.0.0.0 até 255.255.255.255 Reserved
+
+	- Subnet mask: É um valor usado pelo computador para saber/dizer em que network segment ele está. As subnet mask tem o mesmo formato que os IP adresses mas só podem usar os números 0, 128, 192, 224, 240, 252, 254, 255. Suponha que seu computador tem IP address 11000000.10101000.00000001.00001010 (192.168.1.10) e suponha que a sua subnet mask é de 11111111.11111111.11111111.00000000 (255.255.255.0). Agora temos que comparar os valores em escrita binária bit a bit, em cada casa. 1 com 1 significa 1; 1 e 0 ou 0 e significa 0; 0 com o siginfica 0;
+	  11000000.10101000.00000001.00001010 (192.168.1.10) IP adress
+	  11111111.11111111.11111111.00000000 (255.255.255.0) Subnet mask
+	=>11000000.10101000.00000001.00000000 (192.168.1.0) network segment 
+A localização "geográfica" desse computador na internet vai estar portanto entre  192.168.1.0 e 192.168.1.255. Como nesse caso o único valor que pode variar é o ultimo block, dizemos que ele é a host part e os outros 3 primeiros blocos são a server part (fixos).
+OBS: É possivel ver a escrita do tipo 192.168.0.109/24. Isso basicamente diz que os primeiros 24 bits do IP são ditados/fixos para a server  part. O mesmo sendo aplicado para IPv6 (a seguir) (ex: fe80::57a1:82cd:7351:61a7/64)
+
+	- IPv6 addresses possue 128 bits long e por consequencia aumenta o número de addresses possiveis. A tecnologia IPv6 não suporta/utiliza subnet masks. A distinção entre individual networks é feita ao analisar os primeiros 64 bits do desse ip address, sendo os demais 64 bits variáveis de acordo com a host part. Diferentemente do anterior, esse é representado em hexadecimal notation. Ele é dividido em 8 blocos de 16 bits cada e efetivamente dividido por ":" (totalizando 128). Por exemplo: fe80:0000:0000:0000:017b:8fde:e8ba:043a. Exitem algumas regras/mecanicas na escrita que facilitam, por exemplo quando existem blocos de zeros seguidos podemos escrever "::". No caso do exemplo acima ficaria: fe80::017b:8fde:e8ba:043a. Também é possivel deixar os zeros que aparecem no início implícitos, no caso do número acima, poderiamos reescreve-lo como: fe80::17b:8fde:e8ba:43a (repare que os zeros "da frente" que podem ser omitidos).
+
+
+• persistent network configuration:
+	- O "network manager" é um daemon que gerencia as configurações da rede, existindo até aplicativos com interfaces gráficas para tal. No console um dos mais usados é o 'nmcli'. Ao fazer 'nmcli device show' você verá as informações dos devices "ligados", por exemplo seu IPv4 e seu IPv6 além de outras informações (como o nome do device, no meu caso é "enp3s0"). Para informações mais resumidas 'nmcli connection' pode ser usada.
+
+	- Como eu não uso wifi no pc os comandos não funcionam, porém você pode verificar quais são as redes de wifi acessiveis ao fazer dois comandos seguidos: 'mncli device wifi rescan' && 'mncli device wifi list'. Para se desconectar de uma rede wifi use: 'mncli connection down <SSID>'. E para se conectar basta usar 'up' no lugar do 'down' (O SSID é um valor que você encontra ao fazer 'nmci device wifi list'). Em "/etc/NetworkManager/system-connections" ficam configurações das redes wifi na qual você se conectou. Algumas informações como o mac-address ou a senha do wifi (na aba wi-fi security, no valor "psk") estão lá. O comando 'hostnamectl' mostra o hostname e algumas outras informações.
+
+
+• Tools to network issues:
+
+	- Com 'ifconfig' você pode ver as conexões atuais e suas particularidades (como a netmask, ip address (chamado de inet), podendo muda-lo, ver se existem erros, qual o tipo de conexão (wifi ou ethernet) e  etc). Com esse comando também é possivel mudar seu Ip address (claro que só a user/host part, que é o ultimo bloco). Por exemplo: 'sudo ifconfig <adaptor ex: enp3s0> <novo ip_address. Só mude o ultimo bloco>'. No meu caso a internet não se manteve, porém o comando ping funcionava (existia a troca de packages), deixando essa parte confusa.
+	- Com 'sudo ifconfig enp3s0 <up ou down>' você pode ligar/desligar a conexão cujo adaptor é o enp3s0 (meu caso). O nome do adaptor pode ser facilmente visto ao usar 'ifconfig'.
+	- Com 'ping' você pode estabelecer uma "conexão teste" entre servers ou redes. Ex1: 'ping 192.168.178.1'. Ex2: 'ping -c 5 google.com'. O comando vai rodar infinitamente no primeiro caso, para sair aperte ctrl + c.  Com esse comando ainda conseguimos ver quantos packages foram enviados/recebidos, quantos foram perdidos e qual a latencia (em ms) além de qual é o ip do site (caso usassemos uma URL).
+	- Com 'hostname -i' vemos o ip address do host do pc.
+
+• Routes:
+	- O pc envia dados diretamente se for entre dispositivos na mesma rede (sobre o mesmo roteador/router). Se os dispositivos estiverem em diferentes networks, os dados seram redirecionados através de diversos routers, seguindo uma rota chamada de route. A route table é uma lista que mostra para os onde os dados são enviados em certas situações. Ao usar 'route -n' você verá essa tabela, e as colunas "destination" (para onde os dados vão), "Gateway" (é o ip address do seu router/roteador), "genmask" que é basicamente a netmask, "flags" (onde U significa up e G significa que esse gateway está sendo usado) entre outras. Exemplo:
+	Destination     Gateway         Genmask         Flags
+	0.0.0.0       192.168.0.1       0.0.0.0          UG
+	O destino     manda os dados   sua netmask   suas flags
+	pode ser      para o roteador
+	qualquer um   com esse ip
+
+	- Claro que outras condições tem que ser cumpridas (com ter acesso liberado e autenticado de um roteador) mas basicamente para que os dados possam ser enviados eles precisam de uma porta de saida (gateway) que é um roteador. Para adicionar um roteador como default usa-se 'sudo route add default gw <ip_address do router>' As modificações não podem ser salvas, no lugar disso, deve ser feito um script que será executado automaticamente (cron ou anacron) e que vai fazer essas modificações sempre que o sistema for ligado.
+
+	- 'netstat' é um dos comandos mais usados para obter informações sobre a rede pois combina as funcionalidades de varios outros através de suas options. Por exemplo 'netstat -r' é a mesma coisa que 'route'. Com 'sudo netstat -atop' você verá todas as conexões do tipo "tcp" (troca de dados) além de informações adicionais. Com 'netstat --help' você vê o que cada option faz.
+
+	- 'netcat' (ou 'nc') consegue fazer/modificar qualquer coisa que envolva TCP, UDP ou UNIX-domain sockets. Com netcat você pode estabelecer uma conexão direta entre dois computadores que estão na mesma rede (para redes diferentes você precisa de roteadores, que vai usar dns servers e etc) ao fazer: 'nc -l -p <portnumber ex: 1234>' Agora o outro pc, no que você quer se conectar, tem que usar essa porta. Para saber se a conexão foi Criada usamos 'netstat -atop | grep ":1234"' e veremos se ela está com LISTEN ou não. Agora no outro PC (no que queremos nos conectar) faz-se 'netcat <ip_address do pc que abriu a port> <portnumber>'. Para saber se a conexão foi Estabelecida use  'netstat -atop | grep ":1234"' e verá que agora está com ESTABLISHED caso tudo dê certo. Os systems de uma mesma rede (network) foram conectados, como você não sabe como mandar data packages ficamos por aqui.
+
+• Configurando o DNS do client-side
+	- DNS = domain name system. Garantem que nomes vão estar associados a IP addresses particulares/únicos/específicos (também chamado de name resolution). Quando você faz o comando 'ping' como a url de um site você consegue ver o Ip address dele. Para obter o mesmo efeito podemos usar o comando 'host <url sem o https://>' (repare que 'host' é um comando/programa diferente de 'hostname'). Para achar o ip address de um site utiliza-se o roteador, que vai se conectar com um dns server. Para saber qual é o ip address do dns server usado pelo seu pc faça o comando 'vi /etc/resolv.conf'
+
+
+◘ Safety e Security Concepts:
+	- São comandos/ guidelines para aumentar a segurança e detectar as possiveis ameaças ao sistema. Por exemplo, existem programas que só rodam com "altas/todas" as permissions o que pode ser perigoso/ariscado. Para encontrar esses programas podemos usar o find. Ex: 'sudo find / -perm -u+s'. Com 'passwd' você pode trocar a senha usada para fazer log-in e com 'chang -l <username>' nos podemos ver quando uma senha vai expirar e etc (esse tópico já foi abordado anteriormente, revise-o se necessário).
+
+	- Em empresas, para garantir que algum funcionário não vai cagar no sistema, colocam-se restições em o quanto ele pode usar o server e do pc. Isso é feito através do 'ulimit'. Com 'ulimit -a' você vê quais são as limitações do pc atualmente. Para imputar restrições deve-se modificar o arquivo "/etc/security/limits.conf" com root rights OU então usar o comando 'ulimit' com as options corretas. Para realizar um hard limit você deve ser o root. Ex: 'sudo su -' e depois 'ulimit -c 50000' Com isso o tamanho máximo de arquivos tem que ser 50Mb.
+Agora como user, se eu fizer 'ulimit -c 20000' eu posso (isso é um soft limit). Mas fazer 'ulimit -c 70000'  é proibido/barrado (pois é um hard limit).
+
+	- Com o comando 'lsof' você pode ver Todos os arquivos e programas que estão abertos/rodando atualmente na máquina, além de dar informações deles. é superútil quando você está com suspeita de vírus. Uma aplicação é  'lsof -i' que vai mostrar todos os arquivos e programas que estão abertos e que tem conexão com a internet.
+	- Com 'w' você tem um panorama de quem está o usando o sistema e a quanto tempo.
+	- O arquivo "/etc/sudoers" é onde você organiza e seleciona quem pode usar o comando sudo (obter os root rights durante a execução de um comando). Você também pode permitir que users específicos possam usar comandos específicos. Para trocar/passar a ser user você pode fazer 'sudo su -'
+
+	- Você pode empedir que users fazam o log-in de várias maneiras. Uma delas é deixar o "/run/systemd:" seguido de "/usr/sbin/nologin" dentro do arquivo "/etc/passwd" (já citado). Outra maneira é criar o arquivo "nologin" em /etc. Se você não especificar um user, você vai se trancar fora do sistema. Para evitar isso, o arquivo "/etc/nologin" vai ser excluido após reiniciar o sistema.
+
+	- Systemd socket: é uma ferramenta que systemd systems tem para disponibilizar sockets para as service units (.service files), essas ultimas efetivamente executanto um programa/ação. Um socket é um dos "fins" para uma conexão entre programas rodando dentro de uma mesma network. Imagine uma linha, em uma ponta/estrimidade da linha existe um socket que mantém o "contato" entre a outra ponta (que pode ser um server, (tipo um da google) com o que está depois que a linha acabou (que pode ser um aplicativo, tipo o google chrome).
+
+• ssh
+	- No trabalho (de TI) você vai ter que acessar servers em datacenters todo dia, seja para pegar alguma informação, realizar algum comando, etc. Você deve fazer isso através do seu pc. Um dos comandos mais usados é o 'ssh' (Secure shell). Um "ssh server" deve estar instalado no server que você quer acessar.
+OBS: Um server pode (e é na realidade) outro pc.
+OBS2: Isso só funciona para pc's em uma mesma network. (Se estiver em outra, o processo é outro)
+	
+	- Baixe a package "openssh-server". Quando ativo um process chamado "sshd" vai estar ligado. Feito esse processo de criação e ativação de um ssh server, em outro pc, nós podemos  usar o comando 'ssh <server/pc ip-address>' para se conectar.
+Na primeira vez ao se conetar a um server um aviso para confirmar se o server é confiável vai aparecer. A "key fingerprint" também vai aparecer, ela basicamente é algo que podemos usar para autenticar e confirmar a veracidade do server. A host key(fingerprint) vai ser copiada para "~/.ssh/known_hosts".
+Você só vai coseguir logar no server se O SERVER (sistema/pc que contém o server) tiver user que você usarápara logar. Ex: joão é meu user (client side) e no Server existe um user chamado José. O user joão não pode logar mas o user José pode. (pois está no server side). Também vai ser pedido a senha de log-in do user que exite no server para que a conexão seja concluida. Agora seu PC está conectado com o server, e como se você tivesse virado o clone dele, tudo o que fizer lá vai repercutir no server e vice-versa. Para sair use 'exit'.
+
+	- Isso pode variar de empresa para empresa mas basicamente você tem 2 users/indentidades. Uma que você usar para fazer atividades no pc da empresa (client side) e a outra para fazer atividades no server ATRAVÉS do pc da empresa (um user no server side).
+	Para especificar qual user do server vai se conectar (escolhendo com qual conta entrar no server) basta fazer:'ssh <username>@<server-ip_address>' (tudo tem que ficar "grudado" no "@").
+Recapitulando, para criar um user de maeira correta (para o serve side, por exemplo) faz-se: 'sudo useradd -u <crie1-use_id> -d /home/<username> -m -c "comentário" -s /bin/bash <username>' Também é necessário adicionar uma senha (psswd <username>). É ESSA senha criada para o user DO SERVER, que vai ser usada na hora do log-in no server.
+
+	- Para copiar/passar um arquivo para o server usa-se a seguinte estrutura: 
+'scp <file> <server-user>@<server-ip_address>:<PATH_onde_guardar_arquivo_no_server>'
+
+	- Exitem duas config files importantes: "/etc/ssh/sshd_config" que é a config file do ssh server.Você só pode vê-la quando estiver logado no server (remotamente) ou ao usar o próprio pc/server (fisicamente).  Uma utilidade é: impedir que o ip-address do server mude, desconectando todos. Para isso basta ir nessa config file e "descomentar" (tirar o # da frente) e adicionar um ip-address fixo. A outra config file é "/etc/ssh/ssh_conf". Ela é relacionada ao client side. Por padrão a porta usada pelo ssh server e a procurada pelo client para tentar conexão é a porta 22.
+
+• ssh encrypiton
+	- Com 'ssh-keygen' podemos ver a nossa host key (fingerprint usada). ex: 'ssh-keygen -l -f ~/.ssh/known_hosts'. Dentro do server, na pasta "/etc/ssh" podemos ver diversas keys (de todos os users que já logaram no server) onde algumas vão ter ".pub" e outras não. Os arquivos que tem .pub são chaves públicas e "podem ser vistas" por outras pessoas. As keys sem .pub são private keys e não devem ser compartilhadas. Existem diversos modos de encriptação como "rsa" e "ed25519".
+
+	- Como funciona: durante a conexão entre client e server (por padrão na porta 22), o client vai pedir a public key do server (relacionado com seu user). Com a public key em mãos o client vai "encriptar" a sessão. Com a private key o server pode "descriptar" a sessão. Dentro do server/ usando o pc que contém o server  podemos fazer 'sudo ssh-keygen -b 4096 -t rsa' para criar um novo par de keys com encriptação rsa e com 4096 bits long. Durante o processo ele vai pedir uma file para salvar as keys, Escolha "/etc/ssh/ssh_host_rsa_key" para sobreescrever a anterior. Também vai ser pedido uma senha (passphrase), basta não esquecer dela. Dessa forma atualizamos/trocamos a nossa ssh key padrão para rsa. Precisamos informar ao resto do server, para isso vamos até "/etc/ssh/sshd_config" e descomentamos a linha Host key que se refere ao rsa. Depois de reiniciamos o server ('sudo systemctl restart sshd') podemos voltar ao nosso pc normal.  No nosso "pc normal" (client) se nos tentarmos logar no server aparecerá um erro. Isso porque o fingerprint antigo agora é inútil. Depois de executar comando recomendado ('ssh-keygen -f "/home/username/.ssh/known_hosts" -R "<server-ip_address>'),que basicamente exclui o fingerpritn antigo, basta logar novamente e o tudo ocorrerá normalmente, sendo salva a nova fingerprint.
+
+• Encripitando files:
+	- No client side existem diversas maneiras de fazer isso. Usando gpg: primeiro é necessário criar key pairs (private and public keys) através  do comando 'gpg --full-generate-key' que vai guiar você através de opções sobre a natureza e configurações das chaves. No final vai ser pedido uma senha (passphrase) basta você não esquece-la (é comum o programa pedir para você mexer o mouse pela tela para poder gerar "entropia" para criar a chave). Dentro da pasta "~/.gnupg" você verá as public keys em pubring.kbx e as private keys em private-heys-v1.
+
+	- Para encriptar um arquivo use: 'gpg --encrypt <arquivo e sua extensão>' Vai ser pedido um id (você escreve seu username e a pergunta será repetida, basta pular ao apertar enter). Um novo arquivo será criado (com a extensão .gpg) e ele não poderá ser lido nem com 'cat' nem com 'vi'.
+	- Para decriptar um arquivo use: 'gpg --decrypt <file_encripitada> > <nome_nova-file>' O passphrase que você criou acima vai ser pedido para completar o processo.
+
+• Signatures: 
+São informações derivadas do ssh encryption usadas para verificar se um conteúdo foi enviado pela pessoa correta (verificar a veracidade/integridade). Faça 'gpg --detach-sign <file>' para criar a signature de uma file. Tanto a file quanto a sua signature (.sig) devem ser enviadas para a destinatário (ex: alguém que fez o download do arquivo). 
+A pessoa que fez o downlaod pode verificar se esse arquivo é o correto/veridico ao usar: 'gpg --verify <file-signature>' (não é necessário dizer qual é a file em si, só a sua signature). Se tudo estiver correto você verá qual é o tipo de encriptação e quem foi que criou esse arquivo, bem como um email escolhido pelo autor da encriptação que pode servir como canal de contato (caso ocorra algum erro ou etc).
+

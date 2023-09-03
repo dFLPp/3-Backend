@@ -1,0 +1,615 @@
+◘ Conceitos Iniciais:
+
+		- 'pwd'	mostra o diretório (absolute path) atual
+		- 'ls'	mostra alguns arquivos no diretório
+			- 'ls -la'
+			- 'ls -lah'
+			- 'ls -R'
+		- 'cd <path>'	muda o diretório de acordo com o <path> especificado
+		- 'cat <input>' mostra uma parte do conteúdo do input, normalmente usado em arquivos.
+	Dica de Ouro: 
+		- 'Ctrl + E' vai para o final da linha (na CLI)
+		- 'Ctrl + A' vai para o início da linha (na CLI)
+
+	O particionamento no Linux é diferente do Windows, sendo chamado de Directory Tree. O primeiro nível desse diretório é chamado de root (ou chamado de "/" (aparecendo no ínicio de todos os paths)). Depois vem o /home e dentro dele estão todos os usuários criados na máquina. Sendo o último nível a pasta do usuário em si.
+
+		- Relative path: Sabendo qual é seu diretório atual, você pode entrar em subdiretórios sem usar a "/" no início (ex: se estou em /home, basta fazer 'cd flp/downloads' ao invés doo errado 'cd /flp/download')
+		- Absolute path: Você mostra o caminho até a pasta desde o root (o início) ex: 'cd /home/felipe_c/downloads'
+
+	OBS: para voltar um diretório use 'cd ..'	
+	OBS: se você faz 'cd ~' você volta para a /home.
+
+
+	Os comandos normalmente além de sua função principal podem ser acrescidos de algumas outras opções (normalmente com '-' antes dela). ex: 'ls -la'. Para sair da página ou área separada que é aberta em alguns comandos, quase sempre usa-se 'q' ou 'Ctrl + C'. Para mais informações sobre os comandos use 'man' na frente dele (ex: 'man ls') ou --help após ele (ex: 'cat --help').
+
+	O "Kernel" é o centro do sistema operacional, responsável por armazenamento de memória, administração de processos, operações e demais coisas que involvam o hardware. Tem estrutura modular e possue Drivers, que são programas auxiliares que facilitam o funcionamento dos processos. Os drivers do kernel são chamados de "Modules", podendo ser carregados (ligados) ou desligados manualmente. 
+		- 'uname -a'	vai mostrar todas as informações do kernel. 
+		- 'lscpu'	mostra detalhes sobre a cpu (processador)
+		- 'lsmod'	mostra os kernel modules ligados atualmente.
+		- 'cat /proc/modules'	mostrará resultado semelhante ao 'lsmod'
+		- 'modinfo <nome_module>'	vai dar informações detalhadas sobre um module uma vez dado o seu nome.
+		- 'modprobe -r <nome do module>'	Vai remover um module dado o seu nome. Para confirmar você pode fazer: 'lsmod | grep <nome do module>' onde o "|" serve para concatenação e o grep serve para filtrar o resultado.
+		OBS: Kernel Ring Buffer é uma parte do HD que armazena dados e mensagens relacionadas ao funcionamento do kernel. É onde você pode ver informações e relatorios detalhados sobre o funcionamento do kernel e se as outras partes do SO foram integradas corretamente.
+
+• Solid and Virtual files systems
+		- Solid files systems são sistemas de armazenamento de arquivos que utilizam de uma unidade física (hd, sdd, etc) com uma Estrutura Hierárquica entre os diretórios.
+		- Virtual file systems armazenam os dados não no hard disk, mas sim na memória RAM, ou seja, os arquivos só existem enquanto o computador estiver ligado (Runtime) e depois são deletadas (pois a memória é volátil).
+
+	Os computadores suportam ambos os sistemas. fazendo 'cd /proc' (pasta "proc" dentro do "root(/)") você entrará em um virtual directory, mostrando os processos que estão sendo executados atualmente. Os arquivos dessa pasta são nomeados por números, os PID's (process id's). Outro virtual directory do linux é o "/sys" que tem informações sobre o hardware em geral.
+	"/dev" possue as configurações dos dispositivos e outras informações cruciais como as Partições do seu HD (sda, normalmente). O linux automaticamente gerencia os arquivos do sistema usando o programa 'udev'. Quando o usb é conectado, por exemplo, o linux e o udev são os responsáveis pelo funcionamento. O "udev" é um gerenciador de dispositivos, sendo responsável por organizar os processos e a comunicação do pc com os dispositivos externos como no caso dos "hot plugs".
+		- Hot plug: hardware devices que são acoplados ao pc durante o runtime e que podem ser usados imediatamente (ex: usb)
+		- Cold plug: só pode ser acoplado quando o pc está desligado. (ex: HD)
+		- 'lsusb -v'  mostra informações dos usb devices conectados.
+
+◘ Variable Basics: 
+
+	Command line environment, local onde você trabalha/'conversa' com o kernel(linux system). Existem vários tipos de shell: o próprio shell (velho), bash (mais usado), sh, csh, khs, zhs.
+
+	No bash você pode fazer o display das suas "Environment variables" ao usar o camando 'env'.
+	Variaveis de ambiente são "entidades" que compõem o todo. Ex: uma sala não existe sem paredes, do mesmo modo, não conseguimos executar programas se a variável "PATH" estiver errada.
+	Se eu quero executar o comando 'init', não preciso escrever o local onde ele está (/sbin/init) basta eu escrever init (pois o "PATH" [variável] sabe que essa pasta(/sbin) possue executáveis importantes, favocerendo a execução deles)
+		echo $PATH
+		echo $BASH
+
+		- 'set': nos mostra outras variables, algumas configurações do shell, language variables e também serve para alterar e detalhar informações do shell.
+	'set -x' vai entrar no "Debate mode", onde, entre outras coisas, o shell vai analisar e repessar o que acontece com os scripts que você roda (sendo útil para localizar erros enquanto um app está rodando). Para desligar basta usar 'set +x'
+
+		- 'unset': pode remover variables e functions.
+	Por exemplo, ao criar uma variables ( '$VARIABLETEST0815=variabletest0815' ) posso fazer 'echo $VARIABLETEST0815' para confirmar a criação.Agora posso deleta-la com 'unset VARIABLETEST0815'. Essa variable criada só é usada no bash em que foi criada.
+	Ao fazer '$VARIABLETEST0815=variabletest0815' e depois fazer 'bash' entramos em um sub-shell, onde a variable criada não vai existir. Para sair do sub-shell basta escrever 'exit'.
+
+		- 'export': possibilita criar uma variável que pode ser passada para outros sub-shells.
+	Basta escrever 'export $VARIABLETEST0815=variabletest0815' e testar em um sub-shell (também chamado de nested shell)
+	Repare que ao usar 'export', a variável só é exportada para nested shells da "aba" atual. Se você abir outra aba do terminal, a variável não vai existir na nova aba do bash.
+
+◘ Boot Process:
+
+		1. A BIOS ou UEFI (placa mãe) liga e faz faz testes para ver se as outras partes do pc também ligaram e estão se comunicando. Ela então acessa o Master Board Records (MBR) que é o primeiro setor do HD.
+		2. Lá ela vai achar o BootLoader ou Bootstrap loader, o responsável por iniciar o Kernel. Os mais usados são GRUB 2 ou o antigo GRUB Bios (grand unified bootloader = GRUB)
+		3. O kernel é iniciado
+		4. Cria-se o arquivo InitalRamDisk ou initrd, ele só existe durante o boot. Esse arquivo cria/carregada uma imagem do sistema que contém somente os diretórios essenciais para que a próxima etapa seja concluída.
+		5. Entre outras preparações, executa-se o comando 'init' (PID 1). Aqui o computador já ligou completamente e o initrd é desligado/excluído.
+
+		Usando o 'pstree -p', você verá que o primeiro processo é o 'systemd', o sucessor do 'init' em coputadores mais atualizados.
+	Para analisar/procurar por erros (que acontecem, mas não impedem o boot) você pode usar o comando 'dmesg | grep -i error' ou o comando 'journalctl -k'
+
+		O GRUB 2 tem diferentes modos: menu mode, command line mode (cli), rescue mode e o edit mode.
+	Para você ver o menu mode, e escolher qual sistema opercional iniciar, segure "Shift" enquanto está ligando o pc.
+	Se você apertar a tecla 'E' dentro do modo menu, você entrar no edit mode, podendo alterar os start parameters.
+	Se no lugar de 'E' você apertar 'C' você vai para o cli mode, que é basicamente um shell onde você só pode mexer nos start parameters.
+	Normalmente existem duas versões do kernel linux no sistema, bem como 2 initrd para caso algum dê erro. Para sair do menu mode aperte 'ctrl+X'
+
+		Em linux antigos usa-se:
+			- 'sysVinit' (ou 'init'): normalmente fica na pasta "/sbin" (/sbin/init) sendo responsável por iniciar os primeiros processos do pc. Um arquivo que o 'init' cria é o "inittab", dentro da pasta /etc (/etc/inittab). Ela tem informações sobre o 'runlevel' default. existem 7 no total (0 ao 6), vamos discutir sobre mais adiante. O "path" que contém a ordem de inicialização dos aplicativos varia de acordo com a distribuição. Em Debian's seria "/etc/init.d" e em RedHat's seria em "/etc/rc.d"
+			Uma maneira de iniciar/parar processos em sistemas que usam o 'init' é usando o comando 'service':
+				- 'service <nome> stop/start/status/restart'
+		OBS: SysVinit -> Unix, Sysinit -> linux
+		supondo o "rc5.d"(runlevel 5) como sendo o default, dentro dele, existiram scripts nomeados que começam com S(start), e a sua ordem de início, e que começam com K(kill), e as suas ordens de finalização.
+			Síntese: initrd cria sysvinit (ou, atualmente systemd diretamente) e então checa o inittab e vê qual o runlevel padrão, então vai até "/etc/init.d" ou "/etc/rc.d" e verifica o runlevel default, que contém os scripts com as ordens corretas para iniciar o pc.
+
+			- 'upstart': foi o sucessor, por pouco tempo, do SysVinit e era baseado em iniciar processos em paralelo (não em ordem). Aqui o "/etc/init" é oculto e começa automanticamente, com a extensão dos arquivos sendo '.conf' (antes era '.d'). Mesmo assim o PID #1 ainda é o init, encontrado em /sbin. Aqui, para mexer com os processos, usa-se o 'initclt': 
+			'initctl stop/status/start <nome>'
+
+		Em linux atuais:
+		- 'systemd' atualmente usado, também baseado em iniciar processos em paralelo, e guardando arquivos essenciais (chamados de 'units', normalmente '.device') em "/etc/systemd/system" e em "/lib/systemd/system". Se o mesmo arquivo existe nas duas pastas, o que está em /etc/systemd/system é preferido e o outro ignorado.
+		   Para mexer nos processos usa-se o comando 'systemctl':
+		   		- 'systemctl status/start/stop <nome>', e usando '
+		   		- 'systemctl list-units' ista todos os processos e seus status. 
+		   Para alterar outras configurações, vá até "/etc/systemd/system.conf".
+
+		• Runlevel: é o estado/level em que o computador está atualmente. Através dele o linux (durante o boot) decide quais processos devem começar primeiro e automaticamente.
+	Existem 7 no total (0 até 6) sendo que o 5 é o pradrão para muitos desktops:
+	Runlevel 0 - o sistema está desligado
+	Runlevel 1 - ou (S) Single user mode, Only root can access the system. sem network services e sem GUI (graphical user interface)
+	Runlevel 2 - Muilti-user. Sem network services e sem GUI
+	Runlevel 3 - Multi-user. Network services. sem GUI
+	Runlevel 4 - Not used
+	Runlevel 5 - Multi-user. Network services. GUI available.
+	Runlevel 6 - System will restart
+	Para alterar o runlevel atual faça 'init x' ou 'telinit x', sendo x o número do runlevel
+
+	Em "systemd" systems, os runlevels são chamados de boot-targets:
+		Runlevel 0 = poweroff.target
+		Runlevel 1 = rescue.target
+		Runlevel 2 = multi-user.target
+		Runlevel 3 = multi-user.target
+		Runlevel 4 = multi-user.target
+		Runlevel 5 = graphical.target
+		Runlevel 6 = reboot.target
+
+	- 'sudo systemctl isolate <target em questão>' para alterar o runlevel atual em sistemas desse tipo (systemctl)
+	- 'systemctl get-default' para saber qual o runlevel defaut. 
+	- 'sudo systemctl set-default <target em questão>' para alterar o default boot target
+	- 'shutdown' é outro comando para desligar ou reiniciar o pc. ex: 'sudo shutdown -r +10' o pc vai ser reiniciado em 10min; 'sudo shutdown -h now' desliga o pc na hora
+	- 'reboot' faz o reboot
+	- 'wall' você pode escrever uma mensagem ou mandar o conteúdo de um arquivo aos usuários logados no server/pc.
+
+◘ Most Important Directories:
+
+	Enquanto a partição principal (parte do hd) do windows é chama de C, ou outra letra, em linux não há 'C' e sim o root directory (/). Ou seja, "C:" não é um diretório.
+	"root" é o nível mais alto do Tree Directory do linux (não confundir root(/) com /root)
+
+		Os diretórios no root são padronizados e descritos de acordo com o FHS: File System Hierarchy Standard
+
+		- /bin: Basic Linux command binaries (comandos diversos que qualquer user podem usar, ex: dmesg)
+		- /boot: Static files of the bootloader & static files of the Linux kernel (lembrando que 'static' significa que não é volátil)
+		- /dev: Device files from physical and logical devices (como mouses, teclados, etc)
+		- /etc: Configuration files (tanto do sistema quanto de apps que você baixa)
+		- /home: Possue um subdirectory para cada usuário cadastrado no sistema
+		- /lib: Dynamic libraries and kernel modules (drivers). ("libraries" são arquivos que alguns programas precisam para rodar. Equanto no windows cada programa novo instala as libries que precisa, repetindo as já existentes, no linux elas são centralizadas de modo a não serem baixadas mais que uma vez) 
+		- /media: Mount point for removable media (basicamente é o mapeamento de uma parte do hd, de modo que não ocorra transferência errada de arquivos)
+		- /mnt:  Mount point for temporarily mounted File Systems 
+		- /opt:  Onde ficam Additional / optional programs
+		- /root: Home directory of root
+		- /run: Relevant data for ongoing processes
+		- /sbin: Where Linux command binaries (=programas) (comandos com init) that can only be executed by root or users with root rights (via "sudo") takes place.
+		- /srv: Data on various services
+		- /usr: onde estão System tools, libraries("/lib32", "/lib64" entre outras), documents and programs.
+			. Em "/usr/bin" - dentro estão contidos os programas que você baixar através do seu gerenciador de pacotes linux e, de maneira análoga, as libs estão em /usr/lib. 
+			. Em "/usr/local" - (que tem mesma estrutura que /usr) você encontrará aqui os arquivos de todos os programas cujo download foi manual (através do browser ou etc) e claro, os lib's correspondentes estaram em /usr/local/bin.
+	/usr/share - Static data e salva aqui, com os aquivos do comando 'man'
+		- /var: Data that is constantly changing, Ex: Log files em /var/log.
+			. Em "/var/tmp" estão arquivos de cache necessários para o boot além de temporary files que devem ser mantidas depois do reboot.
+			. Em "/var/run" está um 'referência' para o /run (um softlink)
+		- /tmp: Temporary data e dados que variam/mudam E que são temporários
+	Existem outras pastas como /proc, /lost+found, /snap (possue arquivos dos packages do tipo snap (mais disso no futuro), /sys entre outros, mas esses não fazem parte o FHS
+
+◘ Partitions:
+
+	Enquanto no windows temos C:, D: e etc como partitons, no linux, o HD é sub-dividido (em partitions) e intepretados como arquivo, dentro de "/dev".
+	Existem diversas nomeclaturas para partiton e HD's: 
+	HDA para o primeira o primeiro HD conectado ao primary master, HDB, para o segundo HD, depois HDC e etc.
+	Atualmente a maioria dos HD's é chamado de "sda" ou "sdb", mas existem outras variações (como sg0, sg1 e mda1, mda2). Dessa forma, a primeira partição será então chamada de sda1, e a próxima sda2, etc.
+	Em ssd's a nomeclatura seria "nvme0n1p1" para a primeira, nvme0n1p2 para a segunda e etc.
+
+	Do sda1 até o sda4 estão as consideradas "primary partitions". Apartir do sda5 sempre vem Logical partitons, sendo o sda5, sempre, a primeira logical partition (as logical partitions também são chamadas de logical drives)
+	Comandos para ver as partitons: 
+		- 'cat /proc/partitions'
+		- 'lsblk'
+		- 'df -h'
+	Cada partition tem um ID único chamado de UUID (univesity unique indetifier). Para descobrir os UUID's dos HD's use algum dos seguintes comandos:
+		-'lsblk -f'
+		-'sudo tune2fs -l /dev/partition'
+		-'blkid'
+
+	Existe ainda as EFI partitions ou (ESP). EFI significa Extensible Firmware Interface e tem aproximadamente 100Mib, sendo baseada em FAT32 (tipo de arquivo). EFI partitions são usadas quando a placa mãe usa UEFI (Unified Extensible Firmware Interface). O ESP contêm o bootloader e as ISOs de Linux para poder ligar.
+
+	• Mount: 
+	Quando um "device" (alguma aparelho externo) é conectado no pc linux, ele precisa ser 'integrado' ao sistema para que possa trocar arquivos. Atualmente é o "daemon" (ferramenta) do 'udev' (/etc/udev), que  integra automaticamente esses dispositivos (como usb).
+	Quando o HD é instalado, ele é dividido em partições e então define-se um ponto de montagem para elas, ou seja, é definido através de qual path é possivel encontrá-lo (Como se fosse construida uma estrada diretamente à uma parte do hd)
+
+	Um exemplo seria montar sda3 na pasta "teste",dessa forma, sempre que eu adiconar algo a pasta "teste" os arquivos ficaram armazenados na partition sda3, em local separado do restante do hd. Use 'man mount' para mais informações.
+	É possível 'montar' partitions em qualquer parte do sistema de arquivos, desde que o diretório esteja disponível e isso é bastante vantajoso. Ex: se eu criar uma partição no /home, quando o user, dono dessa /home, ficar sem espaço, ele não vai poder interferir nas demais partições, protegendo o armazenamento.
+
+	• LVM (Logical Volume Management):
+	com LVM você pode juntar/separar partições facilmente além de modificar seu tamanho. Porém não pode fazer nada com o /boot, pois o GRUB (boot manager, veremos a seguir) precisa de uma 'correct partition'. O resultado é chamado de Logical volume (ou logical drive) e eis a sua estrutura básica: (de baixo para cima). Use 'sudo pvs', 'sudo vgs' e 'sudo lvs' para mais informações
+
+	Filesystem         /     /home  /temp
+	Logical Volume  LV_root Lv_home LV_tmp
+	Volume Group      (VG HDD-clustering)
+	Physical volume   /dev/sda   /dev/sdb
+
+
+	• SWAP partition (or file):
+	Funciona como a main memory (Memória RAM), armazenando temporariamente arquivos. Desde que a RAM dê conta do recado, o SWAP não precisa agir.
+	A swap file é consideravelmente mais lenta que a Partition. A swap partiion deve ser "1,522" vezes maior que a memória RAM, entretanto, com os computadores modernos, o tamanho pode ser menor, uma vez que a SWAP quase não é usada.
+	Para ativar/desativar user swapon/swapoff. também é possivel fazer swapon -s para mais configurações, ou olhar diretamente com 'cat /proc/swaps'.
+	Se o swapon não funciona, provavelmente o /proc/swaps está vazio. Para resolver use 'swawpon -a'. Agora o swapon vai buscar instruções em /etc/fstab e continuar o processo.
+
+◘ GRUB BootLoader:
+ 
+		- GRUB Legacy: Está presente nos primeiros 512bits do HD. Sempre que ocorre "boot" a BIOS vai procurar por ele in the Master Boot Record (MBR)(ínicio do HD). Após achar o bootloader, esse então procura e usa o "boot.img" para achar/criar/usar o "core.img" (que não está no MBR e sim no free space da boot partition. O trabalho do 'core.img'é achar a boot partition em si, que no caso do grub legacy é '/boot/grub'.
+	Dentro de /boot/grub valhe resaltar a presença do "grub.conf" (ou menu.lst que tem quase as mesmas informações que o grub.conf) e do "device.map".
+	O primeiro contém configurações e informações sobre o sistema e sobre o grub e o segundo informações mais gerais sobre o sistema (local do kernel, etc).
+	O que se acha no grub.conf:
+		default=0 (0 = first kernel in list)
+		timeout=10 (tempo para escolher qual S.O. usar (em segundos))
+		splashimage=(hd0,0)/grub/splash.xpm.gz (logo do grub)
+		hiddenmenu (o que acontece após os 10s)
+		title Linux Server XYZ (título do sistema é XYZ)
+		root (hd0,0) (onde a pasta root está)
+		kernel /boot/vmlinuz-4.0.12-3.dlk44 ro root=LABEL=/1 rhgb quiet (a opção quiet oculta da tela o que acontece durante o boot,bastando remova essa opção para ver.)
+		initrd /boot/initrd-4.0.12-3.dlk44.img
+	
+	Para instalar o GRUB use: 'sudo grub-install /dev/sda1' (você deve especificar em qual partition o /boot está)
+	(não faça isso se for usar o pc, vai reiniciar e etc)
+
+		- GRUB 2: É baseado em GPT (diferente do legacy com MBR), pondendo criar mais e maiores partições e precisa do UEFI para funcionar.
+	Também vai olhar os primeiros 512 bits à procura do bootloader(antes fazendo uma chacagem com o hardware para ver se tudo ligou direito e etc).
+	Após achar o boot.img, ele acha o core.img que vai procurar a partition onde /boot/efi está (Essa partition precisa ser vfat ou fat32 (tipo de arquivo))
+	e então depois vai acessar "/boot/grub2" (ou /boot/grub)
+	OBS: existe no GRUB 2 um GPT Header (que não faz nada, so diz que o GPT está sendo usado) e a Partition Entry Array, que é uma organização de informações sobre as partitions de uma maneira especial e mais eficaz.
+	No GRUB 2 um arquivo importante de lembrar é o "grub.cfg" que está em /boot/grub (ele não deve ser editado manualmente). 
+	Para fazer alterações  faça 'vi /etc/default/grub' para salva-las é necessário fazer 'sudo grub-mkconfig' (ou 'grub2-mkconfig' em redhat systems)
+  
+◘ Shared Libraries:
+
+		Shared libraries são libraries que disponibilizam funcionalidades que os outros programas podem usar. Elas podem ser encontrar no lib directory (/lib) e normalmente tem a extensão .so (shared object) e também podem apresentar a sua versão após o 'so', ex: libh.so.0.0.0
+	Lembre que o Linux tem uma espécie de central de libraries, de modo que novos programas não precisam reinstalar elas, podendo usar as que já instaladas.
+	Outros diretórios onde se pode achar são: "/usr/lib", "/usr/local/lib" ( e suas subpastas) entre outras.
+	Dependencies é nome dado aos arquivos adicionais/auxiliares que um programa precisa para funcionar (quase a mesma coisa que shared libs)
+	Para olhar as shared libs que são dependencies de um programa você deve usar 'ldd <path até o arquivo do programa>'. Ex: 'ldd /sbin/init'.
+
+		O comando 'sudo ldconfig' é usado para criar os links necessários (links são um "caminho" até a pasta correta) e o cache (dados guardados na memória para agilizar o processo) necessários para que as shared libraries mais novas achem os diretórios em que precisam funcionar. Desde que nenhum erro apareça tudo ocorreu bem.
+	fazendo 'cd /etc/ld.so.conf.d' vamos entrar nas configurações do ldconfig, e descubir que ele é basicamente uma cetral de 'pedidos' por libraries, "guiando" os programas que precisam até o local onde elas estão.
+	Se for necessário criar '.conf' file com as "direções" para uma pasta em específico, de libraries específicas, isso pode ser feito e deve ser linkado aqui, ao fazer 'sudo ldconfig' dnv.  
+	Outro redirecionador de 'pedidos' por libraries é $LD_LIBRARY_PATH. Ao fazer 'echo $LD_LIBRARY_PATH' vemos quais os Path's que estão lá. Basta adicionar um path em cada linha que essa variável (porque começa com "$") vai redirecionar os 'pedidos' até essas pastas.
+
+◘ Package Manegement:
+
+	As distros linux possuem diferentes databases que concentram os aplicativos/software mais usados, de modo que você pode instalar eles de maneira mais versátil. Os package managers mudam de distro para distro e são os responsável por instalar, remover, compilar (criar/estruturar o programa da hora, de maneira customizada) packages.
+	(Em Debian e outros systems)
+		• dpkg: usado em Debian's e os arquivos normalmente tem a extensão '.deb'. 
+			- O comando usado para instalar é 'sudo dpkg -i <arquivo.deb>'
+			- Para configurar: 'sudo dpkg --configure <arquivo.deb>'
+			- para reconfigurar: 'sudo dpkg-reconfigure <arquivo.deb>'
+			- para remover: 'sudo dpkg -r <arquivo.deb>' (esse comando não apaga config files, para deleta-las também-> 'sudo dpkg -P <arquivo>') 
+			- Para verificar se o package foi instalado ou desinstalado corretamente: 'dpkg -l | grep <arquivo>'
+
+		• apt (advanced package tool): usa dpkg mas de uma maneira mais eficaz, uma vez que instala as dependências necessárias automaticamente (antes com o dpkg era manual, uma à uma). Usa-se 'sudo apt install <path até o arquivo.deb>' ou simplismente 'sudo apt install <título_arquivo>'.
+		No segundo caso, o package/programa vai ser procurado na database de software da sua distribuição linux.
+		Para remover usa-se 'sudo apt purge <título_arquivo>'. Fazendo 'vi /etc/apt/sources.list' (em distros que usam o apt) você verá os links que apt usará para pesquisar e instalar o software através da internet.
+		É recomendado usar: 'sudo apt update' e sudo 'apt dist-upgrade' antes de fazer qualquer modificação drástica no sistema, já que esses comandos vão atualizar o sistema e os softwares. Além disso, quando você faz o 'apt update', fica guardado no "cache" informações de pesquisa. Se você quer baixar o app do spotify mas não sabe qual o nome do arquivo, você pode fazer um 'apt update' depois fazer 'apt-cache search spotify', pois no cache vai estar uma "lista" de possíveis apps para você escolher e baixar.
+
+		• aptitude: é um software auxiliar do APT. 
+			- 'sudo aptitude install <software>'
+			- 'sudo aptitude remove(ou purge) <software>'
+			- 'sudo aptitude search <software>'
+			A maior diferença entre apt e aptitude é que o segundo possue uma GUI integrada. basta fazer 'sudo aptitude' e você pode utilizar.
+			OBS: "virtual packages" são packages que fornecem/propiciam o uso de uma funcionalidade específica.
+			OBS: "tasks" são grupos de packages pre-selecionados de acordo com um propósito específico.
+
+	(Em Fedora's CenterOS, RedHat e bySuzie systems)
+		• rpm: o comando 'rpm -qpi <arquivo.rpm>' vai nós mostrar informações sobre o package  (-U vai atualizar o package)
+	o comando 'rpm -i <arquivo.rpm>' vai instalar a package (-e vai desinstalar). OBS: se exisitem missing dependencies, o RPM não pode resolve-los automaticamente (mesma coisa que o dpkg)
+	Para verificar se um package foi instalado (pela cli) faça: 'rmp -qa | grep <arquivo>'
+		 
+		• yum: é basicamente um apt (mas das distros citadas acima). Em "/etc/yum/repos.d" estão os arquivos que contém os sites que seram usados para baixar os packages via internet.
+			- 'sudo yum update' vai atualizar todo sistema (lembre que 'sudo apt update' obtem a cache file, não atualiza o sistema)
+			- 'yum search <package>' vai pesquisar pela package e 'yum info <package>' vai nos dar informações sobre ela
+			- 'yum list installed | grep <package>' vai verificar se o package foi isntalado
+			- 'sudo yum install <package>' vai instalar e com "remove" vai remover
+		      
+		- zypper: É uma cli que assim como o yum, resolve as missing dependencies automaticamente e é normalmente usado em openSusie systems, porém pode ser instalado em outras distros.
+			- 'zypper se <package>' vai fazer uma search pelo package.
+			- 'sudo zypper install <package>' instala e "remove" vai remover a package)
+			- 'sudo zypper update' vai fazer o update e para ver os repos usados para baixar as packages online use 'zypper repos'.
+				    
+
+◘ Virtual Machines e Containers (guest virtualization):
+
+		- Virtual machines: são sistemas operacionais (OS's) que podem ser utilizados dentro de outros OS's (usar o windows dentro do linux por exemplo).
+	Basicamente faz-se o download de um "Server Hardware" qeu vem junto com o "Host OS" e com o "Hypervisor". O hypervisor então vai emular um sistema operacional, criando hardware virtual (que na realidade é o hardware local mas camuflado). Cada Guest (O.S. virtual) criado tem suas próprias libraries e apps independentes uns dos outros.
+Existem tecnologias para virtual machines específicas de Linux (LXC/LXD). Elas não necessitam de um hypervisor e a virtualização é feita de uma maneira mais "clean, porém utiliza de containers.
+
+		- Containers: são sistemas operacionais separados e minimizados que funcionam dentro do computador, com propósitos específicos, precisando, é claro, de hardware de qualidade. Por mais que não seja uma definição ou número aproximado, enquanto um hardware consegue rodar 5 VM's, o mesmo hardware consegue rodar 50 containers.
+	Ex: Se eu quero rodar um Apache web server, ao invés de instalar um Ubuntu web server, eu posso simplismente usar uma versão de contêiner do linux (LXC/LXD) e baixar o server lá.
+
+
+◘ GNU and Unix commands
+
+	- 'pwd': mostra nosso diretório atual
+
+	- 'uname -a': mostra informações sobre o sistema
+
+	- 'man <comando>': mostra informações sobre o comando inserido. As páginas/informações que o 'man' mostra estão em "/usr/share/man". As páginas do 'man' são divididas de 1 a 6 e possue tipo específico de informação:
+			1 Executable programs or shell commands
+			2 System calls (kernel functions)
+			3 Library call (functions in program libraries)
+			4 Special files (usually in /dev)
+			5 File formats and conventions
+			6 Games
+			7 Various (including macro packages and conventions)
+			8 System administration commands (usually only root)
+			9 Kernel routines
+	Exemplo de uso: 'man 2 chmod' ou 'man 1 chmod'.
+
+	-'echo': vai mostrar linhas de um texto, alterando também o timestamp do arquivo. Usa-se 'echo' ao invés de 'cat' porque o 'echo' vai mostrar somente as informações da variável (enquanto o 'cat' vai mostrar as informações do arquivo em si)
+
+	- 'history': vai mostrar o histórico de comandos utilizados. Podemos ver o arquivo que armazena o histórico ao fazer 'echo $HISTFILE (normalmente variáveis são representadas com um "$" no início). O arquivo '.bash_history' só é atualizado quando o pc é desligado.
+		
+		OBS: \n é uma line break. Quando você escreve 'echo -e 'teste\n teste'' o output será: 
+		{teste           (com esse pulo de linha)
+		 teste}
+
+	- cat: você mostra o conteúdo de arquivos. Ex:'cat file1 file2 > file3' vai juntar os conteúdos da file1 e da file2 e criar uma file3 com esse conteúdo resultante (repare no uso do ">")
+
+	- less: é melhor do que o 'cat' quando o arquivo é muito grande (mostra o conteúdo página por página [o tamanho das "páginas" é basicamente o tamanho da aba do seu terminal]). Ex: 'less lorem-ipsum'
+
+	- head: mostra as primeiras 10 linhas de uma arquivo. Para escolher o número de linhas você pode escrever '-n x', sendo x o número de linhas. Ex: 'head -n 20 /etc/passwd'
+
+	- tail: mostra as últimas 10 linhas de um arquivo. Para escolher o número de linhas você pode escrever '-n x', sendo x o número de linhas. Ex: 'tail -n 20 /var/log/pacman.log' vai "printar" as últimas 20 linhas do processo de download através do package manager pacman
+
+	- zcat, bzcat, xzcat: são comandos que servem para ver os arquivos de um arquivo compactado sem descompactar ele. Dependendo do fomrmato de compactação você vai usar 'zcat' para ".gz", 'bzcat' para ".bz2" e 'xzcat' para ".xz".
+
+	- nl: mostra o número de linhas de um documento. ex: nl /etc/passwd. algumas opções como "-b a" podem modficar o output.
+
+	- wc: conta o número de palavras em um documento
+
+	- od: mostra/display uma "dump file", ou seja, mostra o conteúdo de um arquivo e salva ele na memória (para possível uso futuro). Pode ter diferentes formatos de output, o padrão é octadecimal. ex: 'od lorem-ipsum'
+
+
+
+
+◘ file manipulation & management: 
+
+		para garantir que o arquvo que você baixou pela internet é o correto, junto com ele vem um "hash", no qual você deve comparar com o arquivo 'original' do site onde você baixou. Se o "hash" for o mesmo então o arquivo está correto. Alguns comandos utilizados são:
+		'md5sum lorem-ipsum': me dá o hash de uma file
+		'md5sum lorem-ipsum > file.md5': salva o hash em .md5, de modo que o "reconhecimento fica automático" ao usar o próximo comando
+		'md5sum -c file.md5': Para verificar se o hash "bate" (não é preciso escrever o nome do arquivo pois file.md5 salvado anteriormente já sabe a que file está se referindo). 
+		Outras 'modalidades' de hash são 'sha256sum' e o 'sha512sum'.
+		
+		- sort: dá como output as linhas de um arquivo, escolhidas aleatoriamente (ou com base em um critério dado). Ex: um arquivo tem os dados em texto separados por uma vírgula e seguindo uma tabulação (estrutura de tabela). Queremos ordenar o output com base na quinta coluna dessa "tabela". Fazemos então: 'sort -t "," -k5 table.csv'. O "-t ","" diz que o separador de colunas é a vírgula e o "-k5" vai usar a inteligência do comando para achar a 5 coluna (sabendo que são separadas por vírgula); Apartir disso, vai ordenar em ordem alfabética (ser forem letras) ou ordem crescente (se for número)
+		
+		- uniq: só vai mostrar o conteúdo não repetido que está imediatamente na linha abaixo. Ou seja, se a linha 3 e a linha 5 tem o mesmo conteúdo, uniq não pode faz nada. Agora se forem as linhas 8 e 9... (Pode-se usar --group para separar os grupos de linhas semelhantes)
+		
+		- tr: só pode ser usado no output de outro comando (com o '|') ele vai trocar/traduzir um caractere por outro. Ex: na table.csv separa por vírgulas(ex acima) podemos trocar as vírgulas por "_" com 'cat table.csv | tr "," "_"' Outro exemplo é deixar tudo maiúsculo: 'cat table.csv | tr "a-z" "A-Z"
+		
+		- cut: você escolhe qual parte do arquivo ter como output. A maneira de escolher é semelhante ao comando sort (onde o '-t' passa para '-d' e o '-kx' passa para '-f x'. Ex: 'cut -d "," -f 1,3,4 table.csv' isso vai nos mostrar as colunas 1,3 e 4 (separadas pela vírgula)
+		
+		- paste: vai juntar o output de dois arquivos em um só, podendo modificar a formatação, organização e etc de acordo com as opções que você usa. ex:  'paste -d "/" file1.txt file2.txt' (você pode salvar usando o >)
+		
+		- sed (stream editor): você pode fazer muita coisa com ele, entre as mais importantes:
+			1.substituir uma palavra por outra (dentro de um arquivo): 'sed s/Employee/Lawyer/g table.csv' ('s' vai substituir /Employee por /Lawyer e '/g' significa que vai funcionar para todas as palavras Employee do arquivo.) 
+	OBS: isso é só um output, para salvar você você deve usar o redirecionador ">". Ex: 'sed s/Employee/Lawyer/g table.csv > table2.csv'.
+
+		- split: vai dividir um arquivo em vários outros, podendo escolher o critério de divisão (por número de linhas, de bytes, etc). Para deletar esses arquivos subdivididos usa-se 'rm ./x*'
+
+		- cd: muda o diretório de atuação de acordo com o path que você disponibiliza (relative or absolute). Usando 'cd -' voltamos ao ultimo diretório que estavamos.
+		
+		- cp: vai copiar e colar files ou directories. Ex: 'cp <file.extensão> <path até onde vai ser colado>'
+	o arquivo ou diretório a ser copiado também pode ser um path, desde que você não esteja na mesma pasta que ele. Ex: 'cp -i /tmp/fl.txt .' vai copiar o arquivo fl.txt dentro do "/tmp" que é o diretório em que o arquivo já está (representado por "."). Como copiar algo pode ser uma operação destrutiva o -i é usado para perguntar se você quer mesmo copiar. Para copiar um diretório é necessário a option '-r'.
+
+		- mv: ao invés de copiar e colar, vai "cortar" e colar, ou seja, vai mover o arquivo ao invés de criar uma cópia. Funciona do mesmo jeito que o 'cp', porém ainda serve para renomear os arquivos (é só colocar no lugar do path de destino o novo nome do arquivo ou folder)
+		
+		- touch: vai modificar o timestamp do arquivo, mas também é usado para criar e modficar a file. 
+		OBS: Em linux você não precisa especificar a extensão do arquivo. Ex: 'touch file.4953405309' não possue extensão quando é criado, só vai ser decidido qual o seu tipo, quando algum conteúdo for inserido.
+		
+		- file: é um comando usado para determinar o tipo/extensão real de um arquivo. ex: 'file file.4953405309'
+		
+		- mkdir: vai criar diretórios
+		
+		- rmdir: vai remover diretórios vazios
+		
+		- rm: vai remover/deletar arquivos ou diretórios não vazios. É um comando cheio de opções úteis. '-i' (de interactive) vai perguntar se você realemnte quer deletar o arquivo, '-r' vai deletar todos os subdiretórios e arquivos e normalmente é usado junto com o -f (fazendo -rf) para não perguntar duas vezes para deletar. Deletar algo é realmente algo perigoso então ter cuidado na hora de escrever esse comando é fundamental. Uma camada a mais de segurança seria usar a notação "./folder" no path (depois que aprender a usar, é claro), garantindo que você so vai deletar o que está no diretório atual.
+
+		- find: serve para procurar por files dentro de um diretório hierarquizado (com outras subpastas). Você pode pesquisar por nome, por tamanho, por formato, etc. Ex: ' find -name file.4953405309'. o find por padrão só procura no diretório atual, mas você pode configurar isso.
+	Ex: 'sudo find / -maxdepth 4 -name *.log' vai procurar apartir do root (/), com no máximo 4 subpastas de profundidade e mostrar os nomes de todos os arquivos que tem a extensão (texto/string) ".log " no nome.
+	
+		- locate: procura através do nome (ao invés do path) e utiliza um index database para procurar o arquivo (método alternativo ao usual). Pode ser necessário instalar o comando em algumas máquinas. ex: 'locate file1.txt'. Se um arquivo foi criado recentemente, provavelmente ele não foi incluido na data base de indexes (que o 'locate' utiliza), dai ou você usa o 'find' ou atualiza a database com: 'sudo updatedb'. No arquivo '/etc/updatedb.conf' você pode ver os locais que não possuem indexes (Prune paths).
+
+		- whereis: é usado para saber onde os comandos (ou programas que possuem "man page" (source files)) estão armazenados. ex: 'whereis chmod' 
+
+		- which: procura só por executáveis, não utilizando a database acima citada e nem o file system, dependendo do conteúdo da variável $PATH. Ou seja, só procura por coisas que estão nos paths da variável $PATH 
+
+		- type: usado para saber a natureza/ tipo de um programa. ex: 'type cp' -> output: "é um alias (apilido/abreviação) do comando cp -i"
+		
+		 - dd: vai copiar partitions ou files bit by bit (ou seja, na ordem de armazenamento do hd). ex: 'sudo dd if=/dev/sda1 of=backup_bootloader bs=512 count=1'. O comando vai pegar o input (/dev/sda1) e vai criar um arquivo/diretório (backup_bootloader) onde vai armazenar os primeiros '512' bits em '1' único Block(or page, lembre, visto no curso de SQL). O arquivo/diretório vai ser criado no root.
+
+		- tar: archive tool command. Com isso você pode juntar varios arquivos em um só, NÃO NECESSARIAMENTE DIMINUINDO o tamanho (é um winrar integrado).
+	ex: 'tar -cf file.tar file1 file2' é o mesmo que: pegue a file1 e a file2 e as "comprima" em um arquivo chamado file.tar (obvio que o conteúdo dos arquivos não vai ser misturado). Você pode usar './*' para criar um .tar com todos os arquivos do diretório atual ("./" = diretório atual, "*" = todos os arquivos e subpastas => "./*" = tudo da pasta atual em um .tar)
+			- para ver as files sem descompactar use: 'tar -tf file.tar'  
+			- para adicionar uma file à um ".tar" já existente: 'tar -rf file.tar filenova'
+			- para extrair use: 'tar -xf file.tar'
+			- Para efetivamente diminuir o tamanho usa-se um compactador. Existem vários mais o "gz" é o mais famoso.
+				gz -> 'tar -cvzf file.tar.gz file1 file2', Onde: -c = create, -v = dê um detalhamento, -z = vai comprimir em .gz, -f = crie uma file.tar.gz e ao juntar todas essas options -cvzf temos a compactação. (Repare na necessidade de adicionar o .gz no final)
+			- Para descompactar basta usar "-xzvf" (mesma lógica)
+
+		- cpio: "copy in  and copy out", tem o mesmo objetivo que o "tar" mas funciona diferente, podendo ou não usar compressão. As extensões desses arquivos são ".cpio". O cpio possue 3 options principais: -i, -o, -p.
+			- 'ls | cpio -o > content.cpio'. Vai pegar o output do "ls" e juntar os arquivos mostrados no arquivo "content.cpio".
+			- 'cpio -it <file.cpio>' vai mostrar os arquivos dentro do .cpio
+			- 'cpio -i < content.cpio' vai descompactar os arquivos.
+	OBS: desde que o comando tenha um output na tela, ele pode ser concatenado com o cpio (desde que não seja um Alias [mais no futuro]).
+			- 'find . | cpio -o > arquive.cpio'
+			- 'find . | cpio -pd /home/test' com a opção -p vai simplismente copiar e colar o output de find . (todos os arquivos do diretório atual) na pasta /home/test (se ela não existir, apção d vai criar automaticamente)
+
+	• Compactação: 
+		
+		O gzip (.gz) é o mais usado em linux, mas só pode compactar um arquivo por vez, por isso que o seu uso com 'tar' é uma combinação poderosa (o .tar vai reunir varios arquivos em um e esse "1" vai ser compactado em .gz). Outro formato usado é o bzip2 (.bz2), ele pode compactar mais que um arquivo por vez (sem precisar usar o 'tar') e usa a sintaxe quase identica ao gzip (colaca-se "bzip2" no lugar de "gzip")
+			- 'gzip -k file.txt' com o -k você não deleta a file.txt quando cria a sua .gz
+			- 'gzip -dk file.gz' -d vai descompactar o arquivo e o 'k' não vai deleta-lo (k = keep)
+
+	• File Globbing: 
+
+	É basicamente a filtração de files através do uso de comandos específicos ("wild cards" aparentemente são chamados). 
+		- Com o "*" você se refere a qualquer número de caracteres e de dígitos no nome do arquivo. Exemplos:
+			- 'ls *.txt' vai mostrar os conteúdos do meu atual diretório com ".txt" no nome.
+			- 'ls test*' mostra todos as files com "test" no nome.. 
+			- 'ls [tT]est*.csv' vai procurar por arquivos que tenha a string 'test' em alguma parte do nome (tanto com "t" como com "T", e que também tenha a extensão ".csv")
+		- Com o "?" você se a refere a um único caractere no nome do arquivo.
+			- 'ls ?.txt' vai mostrar arquivos que tenham UM(1) caractere antes do '.txt'.
+			- 'ls ?????.txt' vai mostrar arquivos que tenham CINCO(5) caracteres antes do '.txt'.
+		- Com os [] você define um intervalo "range" para busca de valores. 
+			- 'ls test[^1-3].txt' vai procurar (nesse diretório, pois não especificamos nada após o 'ls') por um arquivo que tenha "test" no nome, que tenha ".txt" no nome e que NÃO tenha os números que vão de 1 à 3 (1,2,3) (ocorre a "negativa" pois usa-se "^" no início)
+			- 'ls {table,test}[^1-2]*.[Tt][Xx]?' vai listar todos as files cujo nome começa com "table" ou "test", mas que não possuem o número 1 nem o 2 imediatamente após, além de que a extensão deve conter "T" ou "t" seguido por "X" ou "x", que é seguido por qualquer outro caractere ("?"). 
+			
+		- xargs: É uma alternativa para selecionar somente alguns arquivos e fazer coisas com eles. Ex: queremos apagar de uma pasta os arquivos '.baka'. Pode-se fazer 'rm -f ./*.baka' ou podemos fazer 'find *.baka | xargs rm'. No segundo comando, "find *.baka" vai achar os arquivos e separar eles linha por linha. O comando 'xargs' vai juntar todos em uma mesma linha, e somente desse jeito o 'rm' vai poder ser usado para apagar todos de uma vez.
+
+	Um bom exemplo que junta vários dos conceitos citados é: Você tem um arquivo em que, em cada linha, existe um nome todo em caps lock. Você quer deixar todos os nome "um do lado do outro" e tirar eles do caps lock, depois salvar em um arquivo novo. Como fazer? 'xargs -a NOMES.txt | tr 'A-Z' 'a-z' > nomes.txt'. O 'xargs' usa outputs e files para funcionar, nesse caso ele pegou a file "NOMES.txt" e fez o seu trabalho, além disso, com a option '-a' o 'xargs' fez com que seu output pode-se ser usado com input em outros comandos, e, dessa forma, o 'tr' fez o restante do trabalho.
+
+	• Regular Expressions (regex): são comandos/padrões bastante usados no momento de procura/gerenciamento de arquivos para descobrir seus conteúdos, sendo mais versátil que File Globbing. Lembrando, em uma situação de mundo real, não há interface gráfica, logo saber desses comandos mínimos faz máxima diferença. Várias linguagens de programação usam regex, claro que com algumas diferenças, mas o algorítimo de busca é o mesmo. Existem ainda cheat sheets para memorização dos comandos em regex.
+Uma regular expression podem ser:
+		-> basic: podem ser usadas com 'grep'
+		-> extended: só pode ser usada com 'egrep'
+
+	grep pode ser usado como um comando (sem ser concatenado) que serve para encontrar padrões dentro de um arquivos, sendo que suas options variam de distro em distro. Use a man page ou '--help' para mais informações. Os comandos/programs 'egrep' e 'fgrep'  são o mesmo que 'grep -E' (quando o Pattern for uma extended regular expressions) e 'grep -F' (quando o Pattern for uma string), respectivamente. Esses comandos só são usados para compatibiliade (quando o sistema que você está não reconhece ou funciona com o grep normal).
+	Alguns símbolos usados em regular expressions são: 
+		
+		- "^" para denotar uma palavra que deve aparecer no início da linha. 
+			ex: 'grep -i "^this" file.txt'.
+
+		- "$" para denotar a palavra que tem que estar no final. 
+			ex: 'grep -i "exemplo.$" file.txt'. O output vai ser todas as linhas no file.txt que terminam com a palavra exemplo_, onde o "_" significa que pode ter qualquer dígito depois do "exemplo".
+
+	Usando -E (para poder usar extended expressions) podemos fazer: 
+		'grep -E "super-(man|poop)" file.txt'. Aqui o grep só vai mostrar as linhas que possuem (em qualquer lugar/coordenada da linha) as palavras super-man OU super-poop. Usa-se "()" para denotar as possíveis combinações com a string "super-" e o pipe (|) é interpretado com "ou".
+
+
+	• vi (text editor)
+	
+	Uma versão melhorada do 'vi' é o 'vim', mas se for possível escolher use o 'nano'.
+	Ao fazer 'vi' ou 'vim' você entrará no "command mode". Ao usar 'vi file.txt' você vai entrar no "basic mode". Para poder editar o conteúdo do arquivo, em versões antigas do comando, você deve selecionar através do teclado onde vai inserir texto e depois usar a tecla "i" de "insert". Ainda é possível que você não possa usar as setas do teclado para se movimentar pela tela, no geral, prefira o 'vim' ou o 'nano' ou use um 'vi' atualizado. 
+
+	- Para sair do vi, primeiro aperte "Esc" e então depois aperte a combinação "Shift + q" e dê enter
+	Para sair sem salvar use "Shift + q!"
+	Para sair e salvar use: "Shift + wq"
+	Para deletar uma linha inteira use: "dd" no basic mode (cuidado onde você deixa a "caixinha piscante")
+
+	• Environments
+
+		- STDIN (standart input, tem o número 0 associado): normalmente é o teclado, mas aqui existe uma flexibilidade maior, uma file pode ser o stdin desde que seja o input.
+		- STDOUT (standart output, tem o número 1 associado): normalmente é a tela. Quando fazemos um comando o resultado sai na tela. Podemos modificar o output ao usar o redirecionador (>). 
+			Ex:'ls -la / > list.txt' assim o output do "ls -la /" vai para a file 'list.txt'
+		- STDERR (Standart error, tem o número 2 associado): se o comando ou programa dá erro, o Ooutput especial" vai ser o erro, e pode aparecer pela tela ou salvo em uma file (como os .log). 
+			Ex: 'ls -e 2> error.txt' ("2>" devem ficar colados.) '-e' não é uma option que existe no comando 'ls', assim a mensagem de erro que deveria aparecer na tela, vai ser gravada no arquivo error.txt. Em contrapartida, se essa option existisse e o erro não ocorrece, nada iria ser gravado no arquivo.
+
+	Para operações mais complexas precisamos usar os números. Ex: 'ls -la 1> list3.txt 2>&1' o output de 'ls -la' vai para o arquivo list3.txt e o output do erro (stderr) (se existir) vai para o primeiro arquivo citado no comando (usa-se "&1" para se referir ao primeiro arquivo citado). Quando não se usa um número antes do ">" usa-se implicitamente o '1'(1>)
+
+	OBS: Repare que sempre que você usar o '>' os dados vão ser sobreescritos (deletados para entrada dos novos). Para não deletar os dados antigos, e simplismente adicionar os novos (sem apagar os antigos) usa-se '>>'. Normalmente usa-se > para enviar os primeiros dados e depois disso só usa-se o >>. Também pode-se redirecionar/ concatenar os dados usando o '|'(pipe).
+	
+◘ Gerenciamentos de Processos:
+
+		- ps: vai mostrar os processos "rodando" atualmente. Usando 'ps -ef' você tem informações mais detalhadas.
+		Na primeira coluna (UID) você verá quem iniciou o processo, na 2 você verá o PID do processo, e na terceira ira ver o PPID (é o PID do processo qu criou esse processo de que estamos falando)
+
+		- pstree vai mostrar os processos em uma "tree view" (use '-p' para ver os PID's)
+
+		- top: Vai mostrar os processo em uma inteface organizada e com outras informações como PR (priority schedule), NI(Nice value), VIRT ( o quanto o processo está consumindo de memória), S (status), %CPU, %MEM (memória física) e outros.
+		OBS:Um processo "zombie" é aquele que não está rodando mas ainda gasta memória.
+
+		- uptime: vai mostrar a quanto tempo o pc está ligado (depois do up), além de outras informações básicas como o "load average" que vai mostrar o gasto/uso do processador pelos processos nos últimos 5, 10 e 15 min. Esses números devem ser menores que o número de "cores" que seu processador, indicando que o processador tem "poder" o suficiente para todos os processos que estão rodado)
+
+		- free: vai mostrar os dados sobre uso de memória.
+
+		- Para achar o PID de um processo específico: 'ps -ef | grep <nome_process>' ou "pgrep <nome_process>". 
+
+	• Quando um processo simplismente não responde mais ao systemctl (ou init) deve-se matar (kill) o processo. Existem vários comandos e até programas que fazem isso, um deles é o 'kill'.
+	A sintaxe básica é 'kill <-SIGNAL> <PID>'. Fazendo 'apropos signal | grep list' você acha a 'man page' com os signals, porém, para evitar confusão segue os principais signals, seus nomes, valores e efeitos
+
+	Signal name		Signal value		Effect
+	  SIGHUP				1			Hangup
+	  SIGINT				2			Interrupt from keyboard
+	  SIGKILL				9			Kill signal
+	  SIGTERM				15			Termination signal
+	  SIGSTOP			17,19,23		Stop the process
+
+	Se o signal não for especificado, o sistema escolhe automaticamente o signal 15 (SIGTERM). Se o signal 15 não funcionar deve-se usar o signal 9 (SIGKILL). ex: 'sudo kill -SIGKILL <PID>'. Só use SIGKILL se SIGTERM não funcionar (o SIGTERM vai dar uma chance do processo "se render", terminando de maneira ordenada seus subprocessos, já o SIGKILL vai chegar na bala, sem tempo de terminar ou salvar nada.
+		- para pausar um processo: sudo kill -SIGSTOP <PID> (normalmente é "Ctrl + z")
+		- para continuar um processo: sudo kill -SIGCONT <PID>
+	o signal SIGINT é representado por "Ctrl + C", onde basicamente ele interrompe a "conexão" do processo, o parando.
+	Você pode usar o 'pkill', que usa o nome dos processos ao invés de seus PID's. Use com '-x' para mais segurança. ex: 'pkill -x <nome>' ( lembre que se não for especiicado o signal, o SIGTERM entra por padrão).
+	OBS: você também pode usar os "values" ao invés dos "signal names" no comando 'kill'
+
+	• Playgrounds
+		Foreground -> é o primeiro plano de um programa ou do bash, é onde você faz as coisas.
+		Background -> é o plano secundário, processos que estão aqui não impedem a utilização do Foreground.
+
+	Conceitualização: O comando 'sleep 30' vai deixar o 'status' (visto co 'top') do seu bash como "sleep" por 30sec. Você pode para-lo com "control z" (SIGSTOP) ou "control c" (SIGINT). Se enquanto o processo estiver parado você usar o comando 'bg', o processo que antes estava no Foreground (fg) agora vai para o Background (bg) e você pode confirmar isso usando o comando 'jobs'. Usando "sleep 30 &" coloca-se automaticamento o processo resultante do comando 'sleep' em background.
+
+		- Os processos no background são "mortos"(kill) pelo signal SIGHUP, ou seja, quando você faz logout ou hiberna/suspende o pc. Para evitar que processos do bg sejam cancelados, usa-se o 'nohup' junto com o comando que não queremos perder.
+	ex: 'nohup sleep 1000 &'. Quando eu fechar o terminal ou sair da minha conta o processo vai continuar, claro que se o computador for desligado nada poderá ser feito. Outras ferramentas que tem função semelhante, mas sintexe diferente, do 'nohup' são o 'screen' e o 'tmux'.
+		- O comando'watch' serve para repetir um comando infinitamente a cada n segundos (2s por padrão) . Para cancelar basta usar o SIGINT (control c) e para escolher o tempo faz-se '-n x', onde x é o período, em segundos.
+	ex: 'watch -n 5 uptime' vai fazer o comando uptime ser aplicado a cada 5 sec.
+
+
+	• Nice Value: é um nivel de prioridade (de usar o cpu) dado a um processo. O padrão dos processos do sistema é 0; vai de -20 (maior prioridade) até +19 (menor priridade). Só o root pode dar mais prioridade (usar os números negativos) para um processo. Para facilitar, normalmente usa-se o comando 'top' para ver os processos.
+		- 'nice -n x <comando>' vai começar o comando com nice value de x. 
+		- 'sudo renice x -p <PID>' vai alterar a prioridade do processo já em execução para x.
+
+
+
+◘ File systems:
+
+	É o framework (estrutura/código) que organiza dados no HD ou em algum outro "data carrier" (ssd's ou outras tecnologias). Salvar, procurar, analisar dados são algumas das atribuições dos file systems. No windows os mais famosos são "FAT32" ou "NTFS". Em linux existem vários file systems mais os mais famosos são: "ext2", "ext3" e "ext4". O ext3 é o ext2 mais com uma função de log (journalling function) que permite você ver quais arquivos foram perdidos em um crash ou hard reset (hardware reset). "xfs", "vfat" e "xfat" também são comumente encontrados em computadores ou servers mais antigos. Existem ainda o "BTR", podendo ser um substituto do ext3 ou do ext4 pois não tem algumas das limitações deles. Uma particularidade do BTR e o "copy on right", quando você copia um arquivo, ele não é gravado no HD e sim virtualmente, a copia do arquivo só será gravada no HD se for feita alguma modificação nela.
+
+	fdisk - manipulate disk partition table. Ssempre é usando com root rights (usando sudo).
+	ex: 'sudo fdisk -l' vai mostrar informações do(s) HD('s) e das partições que você possue.
+	Você verá um asterísco em uma das partitions, essa é a boot flag, indicando que o bootloader está ali.
+	Não é recomendado fazer e desfazer partions à vontade. Use/separe uma parte do hd (virtualizando ou etc) para poder usar os comandos de criação de partitions.
+
+	Ao fazer 'sudo fdisk /hd_teste' você verá que o 'fdisk' é o mesmo comando interativo (te guia durante o processo) que você utilizou na tentativa de instalar o Arch linux. Usando a opção 'm' para buscar ajuda, verá várias indicações. ex: ao usar 'n' você inicará o processo de criação de partiton, sendo necessário dizer se ela é primary, extended, qual o tipo de arquivo entre outras informações E, contrário ao output, a partition só será criada quando você salvar as alterações com 'w'. Durante esse processo você também pode deletar a partiton.
+
+	Para especificar o tipo da partition use 't' e depois 'L' para listar os códigos correspondentes. Existem diferentes layouts que você pode usar para o seu hd. Você pode criar 3 partitions, uma para o /home, uma para o bootloader e outra para o swap, ou então só criar 2, colocando o bootloader junto do /home (não dentro). Para cada partiton há um propósito e para cada propósito há um tipo de arquivo idela para a partition.
+	OBS: existem programas que permitem que você modifique o tamanho de uma partition sem ter que deletar ela.
+
+	Após criar a partition no hd, é necessário adicionar um file system a ela. faz-se isso usando 'mkfs' que fica na pasta /sbin (e que portanto precisa de root rights). Fazendo 'ls-la /sbin/mkfs*' que nada mais é que uma pesquisa direcionada aos arquivos que possuem a string "mkfs" no nome. Você verá as variações desse comando. 
+	ex: para criar o file system em ext4 usa-se 'sudo mkfs.ext4 /dev/partiton' ou então 'sudo mkfs -t ext4 /dev/partition'
+	OBS: se alguma partition é do tipo swap / solaris, é necessário criar um swap file system nela, usando o comando especial mkswap. 'sudo mkswap /dev/partition' e depois basta usar 'swapon /dev/partition'. FIinalmente, se for usar essa partition você terá que monta-la
+
+	Um comando útil e já citado aqui é o 'lsblk', que pode ser usando com '-f' para nos dar informações detalhadas da organização do HD.
+	Existem alternativas ao 'fdisk', como o 'gdisk' e o 'parted', sendo o gdisk mais parecido com o fdisk e o parted tento um modo de operação e e criação de partitions diferenciados.
+
+
+	• Manutenção/administração de file systems.
+
+		- du: estima o espaço usado no hd. ex: 'sudo du -hs /' onde a "/" denota a pasta root. Pode-se usar outras opções como o --max-depth=x
+
+		- df: também usada para verificar o uso de memoria/espaço. ex: 'df -h'. Com -i você pode ver os "inodes". Inodes são as entradas de um file system. Em uma situação onde você tem muitos arquivos de tamanho pequeno, as inodes ficaram cheias e nenhum outro dado poderia ser escrito no hd por mais que exista espaço. Inodes também contém metadados importantes como timestamps, links/references entre outros.
+
+		- fsck: é o comando que verifica se as file systems estão configuradas corretamente, se há algum erro e etc. Só funciona no boot, quando as partitons ainda não foram montadas no sistema. Para fazer no runtime você vai ter que fazer o unmonunt. 'sudo fsck /dev/partition' sendo que a partition tem que estar unmounted (para verificar, basta confirmar que 'mount | grep partion' não tem output)
+	Para remontar: 'mount -t ext4 /dev/partition /local_a_ser_montado' Dessa forma, quando eu entrar no diretório "local_a_ser_montado", eu na realidade vou estar utilizando o espaço da partition citada.
+
+		- tune2fs: possibilita a alterção de algumas configurações de file systems ext2, ext3 e ext4. 
+			- 'sudo tune2fs -l /dev/partiton' serve para olhar as configurações atuais.
+			- 'sudo tune2fs -i 5d /dev/sda1' vai dizer: de 5 em 5 dias, execute o 'fsck' durante o boot.
+
+	Alguns comandos para verificar a integridade de file systems do tipo xfs: (sendo necessário fazer o unmont antes)
+			- 'xfs_repair'
+			- 'xfs_db'
+			- 'xfs_fsr' (pode ser feita sem umount)
+	cada uma com options e utilidades que devem ser analisadas em caso de necessidade de uso.
+
+	Aṕos criar uma partiton e definir um file system, agora é necessário montar a partição para que as outras partes do pc saibam que ela existe. 
+		- 'mount | grep /dev/partion' pode ser usado para ver informações da partition e saber se ela está montada.
+		- 'sudo mount -t ext4 /dev/sdc1 /home/cleiton' vai fazer a montagem do file system ext4 da partition /dev/sdc1 no diretório /home/cleiton 
+		- Para desmontar usa-se o comando 'umount /dev/sdc1' (lê-se "U mount")
+
+	As montagens (Mount) que fazemos manualmente não são mantidas depois de reiniciar o pc. É necessário dizer para a máquina fazer isso ao acessar e modificar o arquivo 'fstab' em "/etc/fstab".
+	Ao fazer cat ou nano no fstab você verá que as informações são armazenadas de modo tabular(cada coluna é separada por um tab. Se adicionarmos o UUID (o  "/dev/partition" também serve) e as demais opções seguindo a formatação do fstab, então a montagem vai ser feita automaticamente após o pc ser reiniciado.
+
+	Todas as colunas são auto-explicativas com exeção da coluna options. "defaults" é a opção padrão, mas se precisar de mais informações, basta procurar os diferentes tipos e as suas características na 'man' page do comando mount.
+
+	É possível fazer o 'mount' e 'umount' através de systemctl (para pcs que usam)
+		- Para as informações básicas: 'sudo systemctl status /mount_point'.
+		- Para desmontar faz-se: 'sudo systemctl stop /mount_point'
+		- Para montar faz-se: 'sudo systemctl start /mount_point'
+	O systemd possue uma tecnologia/forma de atualizar/acessar o fstab particular e utiliza de units (.mount, .devices, etc).
+	ex: 'sudo systemctl status /' vai me informar que a unit ".mount" está associada ao "/" (que é o onde a partition /dev/sda1 está montada)
+
+
+◘ Permissions
+
+	Cada arquivo (file) e pasta (directory) possuem certas permissões, dizendo quem pode alterar esse arquivo, qual o número de processos que um programa pode ter no máximo e assim vai. Com 'ls -la', na primeira coluna você verá as permissions. As que começam com "d" são diretórios e as que começam com "-" são arquivos. As permissions começam apartir do segundo dígito, sendo divididas em 3 blocos, cada um com 3 dígitos.
+	Ex: '-rw-r--r--' é dividido em "rw-", "r--" e "r--".  O primeiro bloco (rw-) sempre cita as permissions que o OWNER (dono/criador) do arquivo tem, nesse caso r(read), w(write) sendo que nesse caso não possue o x(execute), colocando-se um "-" no local. O segundo bloco diz quais as permissions do OWNER GROUP (é um "grupo"/maneira de organizar os usuários com mesmas permissions). O terceiro bloco diz as permissions que os demais usuários (que são não owners) possuem.
+
+		- Com o comando 'id' você pode ver a quais grupos seu user pertence.
+		- Com o comando "chmod" você pode mudar/alterar as permissions mas em bit notation: r=4, w=2, x=1, "-"=0. Assim você soma os valores em cada bloco. OBS: a ordem sempre é r,w,x. Ex: Tenho a file1.txt que tem as seguintes permissions: '-rw-r--r--' (644) Para adicionar o "w" e o "x" ao owner group e aos demais users eu faria : 'chmod 677 file1.txt'. Outra maneira seria: 'chmod u=rw,g=rwx,o=rwx file1.txt'
+	Em linux, qualquer coisa é uma "file", dessa forma, para mudar as permissions de um diretório processo é o mesmo, sendo que interpretação das funções do r,w e do x são diferentes mas semelhantes.
+
+	Existem ainda algumas permissions especiais:
+		- sticky Bit: é um 't' que aparece lá no final (no terceiro bloco, no lugar do x). Ela dá a todos os usuários acesso total ao arquivo ou diretório e garante que somente os dados do respectivos users sejam apagados. Ex: na pasta /tmp podem haver arquivos de users diferentes. Todos podem acessar a pasta mas só podem modificar arquivos que são relacionados ao seu user. Para adicionar essa permission na bit notation, basta adicionar um "1" antes dos números. ex:'chmod 1677 file1.txt'. Se a file ou directory não possuir execution rights o "t" vai ser maiúsculo.
+		- SETUID: é um 's' que fica no primeiro bloco no lugar do x. Faz com que, sempre que o arquivo for executado, seja executado com as owner permissions (como se você sempre "executa-se como administrador"). Representado por um "4". ex: 'chmod 4677 file1.txt'
+		- SETGID: é um 's' que fica no segundo bloco no lugar do x. Representado por um "2". ex:'chmod 2677 file1.txt'. Faz com que, sempre que o arquivo ou diretório for executado, seja executado com os group permissions.
+
+	Para mudar o owner e o group ao qual um user pertence usa-se o 'chown' com sudo rights. Ex: 'sudo chown flp:flp file1.txt'. A file1.txt que tinha outro owner e outro grupo, agora tem como owner flp e como grupo flp. Se você usar isso em um directory so a pasta vai trocar de owner e de grupo, os arquivos de dentro não. Para isso acontecer usa-se a opção "-R". Ex: 'sudo chown -R flp:flp pasta1'.
+
+	Normalmente as files criadas vem com as permissions 666 e os diretórios 777. Porém elas podem ser "subtraidas" bloco a bloco por um valor. Usando "umask" veremos um número em bit notation (normalmente 022). Resultando na seguinte transformação:
+	Normal: 666, Umask: 022, resultante: 644 (files)
+	Normal: 777, umask 022, resultante: 755 (folders)
+
+	Para alterar o valor do umask basta colocar o novo, em bit notation do lado do comando. ex: 'umask 026' ou em alguns casos 'umask 0026' deixando claro que não há especial permissions.
+	Se o valor do umask for maior ou igual ao da file ou do diretório, a bit notation não fica negativa, vai simplesmente para zero. Para alterar o valor padrão do umask deve-se modificar seu valor no arquivo "/etc/login.defs".
+
+◘ Links 
+
+	Hardlinks
+		Todo arquivo em linux tem ao menos 1 hardlink, que é o "pointer" (indicador) que diz onde o arquivo está armazenado no file system. Se eu criar outros hardlinks para uma mesma file, elas são basicamente cópias (tem o mesmo conteúdo, mesmas permissions, tudo igual). Se o conteúdo de uma muda o das outras também muda. Se existem 3 hardlinks e dois são deletados, o último que sobra é o arquivo final.
+		O comando usado é o 'ln'. 
+			Ex: 'ln test1 test2' vai criar um link do arquivo test1 no arquivo test2 (se o arquivo test2 não existe, ele será criado automaticamente). Com ls -la podemos ver na segunda coluna o número de hardlinks que um arquivo tem. Os diretórios sempre tem 2 ou mais hardlinks. Hardlinks só podem ser feitos dentro de uma mesma partition.
+		Para Descobrir/diferenciar os hardlinks usa-se 'ls -li' para verificar e comparar os inodes. Se os inodes dos arquivos forem iguais então eles tem um hardlink.
+
+	Softlinks 
+		são symbolic links, contento simplismente o path/caminho até onde o arquivo original está. Se a file é deletada o soft link continua mas não serve para nada. Para criar um softlink usa-se 'ln -s test1 test2'. É fácil de reconhecer um softlink já que ele fica destacado na maioria das CLI's.
+
+
+
